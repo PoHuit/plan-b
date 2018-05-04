@@ -5,11 +5,9 @@
 
 // Plan B: EVE route planner with options
 
-mod map;
-mod search;
-
-pub use map::*;
-pub use search::*;
+extern crate plan_b;
+use plan_b::map::*;
+use plan_b::search::*;
 
 fn find_system(map: &Map, name: &str) -> SystemId {
     map.by_name(name)
