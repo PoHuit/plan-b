@@ -10,7 +10,7 @@
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
-use rocket::request::Form;
+use rocket::request::{Form, State};
 use rocket::response::NamedFile;
 
 extern crate plan_b;
@@ -27,12 +27,22 @@ fn front_page() -> std::io::Result<NamedFile> {
     NamedFile::open("static/plan-b.html")
 }
 
-#[post("/route", data = "<route_spec>")]
-fn search_route(route_spec: Form<RouteSpec>) -> String {
+#[post("/", data = "<route_spec>")]
+fn search_route(route_spec: Form<RouteSpec>, map: State<Map>) -> Option<String> {
     let route_spec = route_spec.get();
-    format!("{} -> {}", route_spec.from, route_spec.to)
+    let from = map.by_name(&route_spec.from)?;
+    let to = map.by_name(&route_spec.to)?;
+    let route: Vec<String> =
+        shortest_route(&map, from.system_id, to.system_id)?
+            .iter()
+            .map(|system_id| map.by_system_id(*system_id).name.to_string())
+            .collect();
+    Some(route.join("\n"))
 }
 
 fn main() {
-    rocket::ignite().mount("/", routes![front_page, search_route]).launch();
+    rocket::ignite()
+        .manage(Map::fetch().expect("could not load map"))
+        .mount("/", routes![front_page, search_route])
+        .launch();
 }
