@@ -52,7 +52,7 @@ pub struct Map {
 
 impl Map {
     pub fn fetch() -> Result<Map, Box<Error>> {
-        let map_file = File::open("eve-map.json.gz")?;
+        let map_file = File::open("/usr/local/share/eve-map.json.gz")?;
         let gunzip = gzip::Decoder::new(map_file)?;
         let map_data: Value = serde_json::from_reader(gunzip)?;
         let json_systems = map_data["systems"]
