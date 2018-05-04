@@ -4,6 +4,7 @@
 // distribution of this software for license terms.
 
 // Plan B: EVE route planner with options
+// Command-line demo client
 
 extern crate plan_b;
 use plan_b::map::*;

@@ -3,7 +3,8 @@
 // Please see the file LICENSE in the source
 // distribution of this software for license terms.
 
-// Plan B library
+// Plan B: EVE route planner with options
+// Library
 
 pub mod map;
 pub mod search;

@@ -1,0 +1,16 @@
+# Copyright © 2018 Po Huit
+# [This program is licensed under the "MIT License"]
+# Please see the file LICENSE in the source
+# distribution of this software for license terms.
+
+[package]
+name = "cmdline"
+version = "0.1.0"
+authors = ["Po Huit <eve.po.huit@gmail.com>"]
+
+[dependencies]
+plan_b = {path = "../plan_b"}
+
+[[bin]]
+name = "plan-b"
+path = "src/main.rs"
