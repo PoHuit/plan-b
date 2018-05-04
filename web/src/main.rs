@@ -10,7 +10,8 @@
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
-use rocket::request::*;
+use rocket::request::Form;
+use rocket::response::NamedFile;
 
 extern crate plan_b;
 use plan_b::*;
@@ -22,8 +23,8 @@ struct RouteSpec {
 }
 
 #[get("/")]
-fn front_page() -> &'static str {
-    "Plan B"
+fn front_page() -> std::io::Result<NamedFile> {
+    NamedFile::open("static/plan-b.html")
 }
 
 #[post("/route", data = "<route_spec>")]
