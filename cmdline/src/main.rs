@@ -35,7 +35,13 @@ fn main() {
     let mut args = std::env::args();
     let start = (&mut args).skip(1).next().expect("no source");
     if start == "--diameter" {
-        diameter(&map);
+        let diameter_info = diameter(&map);
+        println!("diameter {}", diameter_info.diameter);
+        for (start, end) in diameter_info.longest {
+            let start = &map.by_system_id(start).name;
+            let end = &map.by_system_id(end).name;
+            println!("{} → {}", start, end);
+        }
         return;
     }
     let goal = (&mut args).next().expect("no destination");

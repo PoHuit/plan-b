@@ -41,6 +41,7 @@ pub struct SystemInfo {
     pub system_id: SystemId,
     pub name: String,
     pub stargates: Vec<SystemId>,
+    pub system_index: usize,
 }
 
 #[derive(Debug)]
@@ -98,7 +99,8 @@ impl Map {
             let system_info = SystemInfo {
                 system_id,
                 name: name.clone(),
-                stargates
+                stargates,
+                system_index,
             };
             systems.push(system_info);
             by_system_id.insert(system_id, system_index);
@@ -124,5 +126,9 @@ impl Map {
 
     pub fn systems<'a>(&'a self) -> slice::Iter<'a, SystemInfo> {
         self.systems.iter()
+    }
+
+    pub fn systems_ref<'a>(&'a self) -> &'a [SystemInfo] {
+        &self.systems
     }
 }

@@ -4,11 +4,27 @@
 // distribution of this software for license terms.
 
 extern crate min_max_heap;
-use self::min_max_heap::MinMaxHeap;
+extern crate ndarray;
 
+use self::min_max_heap::MinMaxHeap;
+use self::ndarray::Array2;
+    
 use map::*;
 
 use std::collections::HashMap;
+
+pub struct DiameterInfo {
+    pub diameter: usize,
+    pub longest: Vec<(SystemId, SystemId)>,
+}
+
+#[derive(Clone, Copy)]
+pub struct Hop {
+    pub system_id: SystemId,
+    pub dist: usize,
+}
+
+pub type APSPTable = Array2<Option<Hop>>;
 
 #[derive(Clone, PartialOrd, Ord, PartialEq, Eq)]
 struct Waypoint {
@@ -73,39 +89,65 @@ pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId)
     Some(route)
 }
 
-pub fn diameter(map: &Map) {
-    let systems: Vec<&SystemInfo> = map
-        .systems()
-        .collect();
-    let system_ids: Vec<SystemId> = systems
-        .iter()
-        .map(|s| s.system_id)
-        .collect();
+pub fn diameter(map: &Map) -> DiameterInfo {
+    let systems = map.systems_ref();
+    let hops = apsp(map);
+    let n = systems.len();
     let mut diameter = 0;
-    let mut routes_searched = 0;
-    let mut endpoints = Vec::new();
-    println!("searching {} systems", systems.len());
-    for i in 0..system_ids.len() {
-        let start = system_ids[i];
-        let waypoints = dijkstra(map, start, None);
-        for waypoint in waypoints.values()  {
-            if waypoint.dist > diameter {
-                diameter = waypoint.dist;
-                endpoints.clear();
+    let mut longest = Vec::new();
+    for i in 0..n {
+        for j in i+1..n {
+            if let Some(hop) = hops[[i, j]] {
+                let dist = hop.dist;
+                if dist > diameter {
+                    diameter = dist;
+                    longest.clear();
+                }
+                if dist == diameter {
+                    let iid = systems[i].system_id;
+                    let jid = systems[j].system_id;
+                    longest.push((iid, jid));
+                }
             }
-            if waypoint.dist == diameter {
-                endpoints.push((start, waypoint.cur));
-            }
-            routes_searched += 1;
         }
     }
-    println!("diameter {} ({} routes searched)",
-             diameter, routes_searched);
-    for (start, end) in endpoints {
-        if start < end {
-            println!("{} → {}",
-                     map.by_system_id(start).name,
-                     map.by_system_id(end).name);
+    DiameterInfo{diameter, longest}
+}
+
+pub fn apsp(map: &Map) -> APSPTable {
+    let systems = map.systems_ref();
+    let n = systems.len();
+    let mut hops = Array2::from_elem((n, n), None);
+
+    for i in 0..n {
+        for next_hop in systems[i].stargates.iter() {
+            let next_hop = map.by_system_id(*next_hop);
+            let j = next_hop.system_index;
+            hops[[i, j]] = Some( Hop{
+                system_id: next_hop.system_id,
+                dist: 1,
+            });
         }
     }
+
+    for k in 0..n {
+        for i in 0..n {
+            for j in 0..n {
+                if let (Some(u), Some(w)) =
+                    (hops[[i, k]], hops[[k, j]])
+                {
+                    let d_uw = u.dist + w.dist;
+                    match hops[[i, j]] {
+                        Some(v) if v.dist <= d_uw => continue,
+                        _ => hops[[i, j]] = Some( Hop{
+                            system_id: u.system_id,
+                            dist: d_uw,
+                        }),
+                    }
+                }
+            }
+        }
+    }
+
+    hops
 }
