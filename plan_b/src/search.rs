@@ -10,7 +10,7 @@ use map::*;
 
 use std::collections::HashMap;
 
-#[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
+#[derive(Clone, PartialOrd, Ord, PartialEq, Eq)]
 struct Waypoint {
     dist: u32,
     cur: SystemId,
@@ -39,7 +39,7 @@ fn dijkstra(map: &Map, start: SystemId, goal: Option<SystemId>)
         if closed.contains_key(&waypoint.cur) {
             continue;
         }
-        closed.insert(waypoint.cur, waypoint);
+        closed.insert(waypoint.cur, waypoint.clone());
         if goal == Some(waypoint.cur) {
             return closed;
         }
@@ -66,7 +66,7 @@ pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId)
     route.push(cur.cur);
     while let Some(system_id) = next_stop {
         route.push(system_id);
-        let cur = waypoints[&system_id];
+        let cur = waypoints[&system_id].clone();
         next_stop = cur.parent;
     }
     route.reverse();
@@ -102,8 +102,10 @@ pub fn diameter(map: &Map) {
     println!("diameter {} ({} routes searched)",
              diameter, routes_searched);
     for (start, end) in endpoints {
-        println!("{} → {}",
-                 map.by_system_id(start).name,
-                 map.by_system_id(end).name);
+        if start < end {
+            println!("{} → {}",
+                     map.by_system_id(start).name,
+                     map.by_system_id(end).name);
+        }
     }
 }
