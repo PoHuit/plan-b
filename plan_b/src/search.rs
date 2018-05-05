@@ -87,25 +87,20 @@ pub fn diameter(map: &Map) {
     let mut max_goal = None;
     println!("searching {} systems", systems.len());
     for i in 0..system_ids.len() {
-        println!("{} -> ({} routes searched)",
-                systems[i].name,
-                routes_searched);
         let start = system_ids[i];
-        for j in i+1..system_ids.len() {
-            let goal = system_ids[j];
-            if let Some(route) = shortest_route(map, start, goal) {
-                if route.len() > diameter {
-                    diameter = route.len();
-                    max_start = Some(i);
-                    max_goal = Some(j);
-                }
+        let waypoints = dijkstra(map, start, None);
+        for waypoint in waypoints.values()  {
+            if waypoint.dist > diameter {
+                diameter = waypoint.dist;
+                max_start = Some(start);
+                max_goal = Some(waypoint.cur);
             }
             routes_searched += 1;
         }
     }
     println!("diameter {} for {} -> {} ({} routes searched)",
              diameter,
-             systems[max_start.unwrap()].name,
-             systems[max_goal.unwrap()].name,
+             map.by_system_id(max_start.unwrap()).name,
+             map.by_system_id(max_goal.unwrap()).name,
              routes_searched);
 }
