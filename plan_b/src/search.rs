@@ -83,8 +83,7 @@ pub fn diameter(map: &Map) {
         .collect();
     let mut diameter = 0;
     let mut routes_searched = 0;
-    let mut max_start = None;
-    let mut max_goal = None;
+    let mut endpoints = Vec::new();
     println!("searching {} systems", systems.len());
     for i in 0..system_ids.len() {
         let start = system_ids[i];
@@ -92,15 +91,19 @@ pub fn diameter(map: &Map) {
         for waypoint in waypoints.values()  {
             if waypoint.dist > diameter {
                 diameter = waypoint.dist;
-                max_start = Some(start);
-                max_goal = Some(waypoint.cur);
+                endpoints.clear();
+            }
+            if waypoint.dist == diameter {
+                endpoints.push((start, waypoint.cur));
             }
             routes_searched += 1;
         }
     }
-    println!("diameter {} for {} -> {} ({} routes searched)",
-             diameter,
-             map.by_system_id(max_start.unwrap()).name,
-             map.by_system_id(max_goal.unwrap()).name,
-             routes_searched);
+    println!("diameter {} ({} routes searched)",
+             diameter, routes_searched);
+    for (start, end) in endpoints {
+        println!("{} → {}",
+                 map.by_system_id(start).name,
+                 map.by_system_id(end).name);
+    }
 }
