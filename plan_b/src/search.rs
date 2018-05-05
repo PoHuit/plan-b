@@ -3,15 +3,14 @@
 // Please see the file LICENSE in the source
 // distribution of this software for license terms.
 
-extern crate min_max_heap;
 extern crate ndarray;
 
-use self::min_max_heap::MinMaxHeap;
 use self::ndarray::Array2;
     
-use map::*;
-
+use std::collections::VecDeque;
 use std::collections::HashMap;
+
+use map::*;
 
 pub struct DiameterInfo {
     pub diameter: usize,
@@ -44,11 +43,11 @@ impl Waypoint {
 fn dijkstra(map: &Map, start: SystemId, goal: Option<SystemId>)
             -> HashMap<SystemId, Waypoint>
 {
-    let mut q = MinMaxHeap::new();
+    let mut q = VecDeque::with_capacity(map.systems_ref().len());
     let mut closed = HashMap::new();
-    q.push(Waypoint::new(0, start, None));
+    q.push_back(Waypoint::new(0, start, None));
     loop {
-        let waypoint = match q.pop_min() {
+        let waypoint = match q.pop_front() {
             Some(waypoint) => waypoint,
             None => return closed,
         };
@@ -66,7 +65,7 @@ fn dijkstra(map: &Map, start: SystemId, goal: Option<SystemId>)
                 *child,
                 Some(waypoint.cur),
             );
-            q.push(child_waypoint);
+            q.push_back(child_waypoint);
         }
     }
 }
