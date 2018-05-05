@@ -28,13 +28,13 @@ pub type APSPTable = Array2<Option<Hop>>;
 
 #[derive(Clone, PartialOrd, Ord, PartialEq, Eq)]
 struct Waypoint {
-    dist: u32,
+    dist: usize,
     cur: SystemId,
     parent: Option<SystemId>,
 }
 
 impl Waypoint {
-    fn new(dist: u32, cur: SystemId, parent: Option<SystemId>)
+    fn new(dist: usize, cur: SystemId, parent: Option<SystemId>)
            -> Waypoint
     {
         Waypoint{dist, cur, parent}
@@ -130,21 +130,21 @@ pub fn apsp(map: &Map) -> APSPTable {
         }
     }
 
-    for k in 0..n {
-        for i in 0..n {
-            for j in 0..n {
-                if let (Some(u), Some(w)) =
-                    (hops[[i, k]], hops[[k, j]])
-                {
-                    let d_uw = u.dist + w.dist;
-                    match hops[[i, j]] {
-                        Some(v) if v.dist <= d_uw => continue,
-                        _ => hops[[i, j]] = Some( Hop{
-                            system_id: u.system_id,
-                            dist: d_uw,
-                        }),
-                    }
-                }
+    for start in systems {
+        let j = start.system_index;
+        let routes = dijkstra(map, start.system_id, None);
+        for waypoint in routes.values() {
+            if waypoint.parent.is_none() {
+                continue;
+            }
+            let cur = map.by_system_id(waypoint.cur);
+            let i = cur.system_index;
+            match hops[[i, j]] {
+                Some(hop) if hop.dist <= waypoint.dist => continue,
+                _ => hops[[i, j]] = Some( Hop{
+                    system_id: waypoint.parent.expect("apsp: walked off map"),
+                    dist: waypoint.dist,
+                }),
             }
         }
     }
