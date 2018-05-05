@@ -10,37 +10,67 @@ use map::*;
 
 use std::collections::HashMap;
 
-pub fn shortest_route(map: &Map,
-                      start: SystemId,
-                      goal: SystemId,
-                      ) -> Option<Vec<SystemId>> {
+#[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
+struct Waypoint {
+    dist: u32,
+    cur: SystemId,
+    parent: Option<SystemId>,
+}
+
+impl Waypoint {
+    fn new(dist: u32, cur: SystemId, parent: Option<SystemId>)
+           -> Waypoint
+    {
+        Waypoint{dist, cur, parent}
+    }
+}
+
+fn dijkstra(map: &Map, start: SystemId, goal: Option<SystemId>)
+            -> HashMap<SystemId, Waypoint>
+{
     let mut q = MinMaxHeap::new();
-    let mut closed: HashMap<SystemId, (usize, Option<SystemId>)>
-        = HashMap::new();
-    q.push((0, start, None));
+    let mut closed = HashMap::new();
+    q.push(Waypoint::new(0, start, None));
     loop {
-        let (dist, cur, parent) = q.pop_min()?;
-        if closed.contains_key(&cur) {
+        let waypoint = match q.pop_min() {
+            Some(waypoint) => waypoint,
+            None => return closed,
+        };
+        if closed.contains_key(&waypoint.cur) {
             continue;
         }
-        closed.insert(cur, (dist, parent));
-        if cur == goal {
-            let mut route = Vec::with_capacity(dist);
-            route.push(cur);
-            let mut next_stop = parent;
-            while let Some(system_id) = next_stop {
-                route.push(system_id);
-                let (_, parent) = closed[&system_id];
-                next_stop = parent;
-            }
-            route.reverse();
-            return Some(route);
+        closed.insert(waypoint.cur, waypoint);
+        if goal == Some(waypoint.cur) {
+            return closed;
         }
-        let map_info = map.by_system_id(cur);
+        let map_info = map.by_system_id(waypoint.cur);
         for child in map_info.stargates.iter() {
-            q.push((dist + 1, *child, Some(cur)));
+            let child_waypoint = Waypoint::new(
+                waypoint.dist + 1,
+                *child,
+                Some(waypoint.cur),
+            );
+            q.push(child_waypoint);
         }
     }
+}
+    
+
+pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId)
+                      -> Option<Vec<SystemId>>
+{
+    let waypoints = dijkstra(map, start, Some(goal));
+    let cur = waypoints.get(&goal)?;
+    let mut route = Vec::with_capacity(cur.dist as usize);
+    let mut next_stop = cur.parent;
+    route.push(cur.cur);
+    while let Some(system_id) = next_stop {
+        route.push(system_id);
+        let cur = waypoints[&system_id];
+        next_stop = cur.parent;
+    }
+    route.reverse();
+    Some(route)
 }
 
 pub fn diameter(map: &Map) {
