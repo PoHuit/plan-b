@@ -156,20 +156,8 @@ pub fn apsp(map: &Map) -> APSPTable {
     // Set up necessary info.
     let systems = map.systems_ref();
     let n = systems.len();
-    let mut hops = Array2::from_elem((n, n), None);
-
-    // Set up initial hops. XXX This is probably not needed
-    // anymore.
-    for i in 0..n {
-        for next_hop in systems[i].stargates.iter() {
-            let next_hop = map.by_system_id(*next_hop);
-            let j = next_hop.system_index;
-            hops[[i, j]] = Some( Hop{
-                system_id: next_hop.system_id,
-                dist: 1,
-            });
-        }
-    }
+    let mut hops: Array2<Option<Hop>> =
+        Array2::from_elem((n, n), None);
 
     // Use iterated single-source shortest-path search to update
     // all hops.
