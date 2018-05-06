@@ -16,17 +16,21 @@ use rocket::response::NamedFile;
 extern crate plan_b;
 use plan_b::*;
 
+// Need to wrap the EVE route spec for use in endpoints.
+// XXX The word "route" is ambiguous in this code.
 #[derive(FromForm)]
 struct RouteSpec {
     from: String,
     to: String,
 }
 
+// Display the Plan B front page.
 #[get("/")]
 fn front_page() -> std::io::Result<NamedFile> {
     NamedFile::open("static/plan-b.html")
 }
 
+// Process an EVE route request.
 #[post("/", data = "<route_spec>")]
 fn search_route(route_spec: Form<RouteSpec>, map: State<Map>) -> Option<String> {
     let route_spec = route_spec.get();
@@ -40,6 +44,7 @@ fn search_route(route_spec: Form<RouteSpec>, map: State<Map>) -> Option<String> 
     Some(route.join("\n"))
 }
 
+// Plan B web service.
 fn main() {
     rocket::ignite()
         .manage(Map::fetch().expect("could not load map"))

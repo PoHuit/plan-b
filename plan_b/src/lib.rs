@@ -3,8 +3,10 @@
 // Please see the file LICENSE in the source
 // distribution of this software for license terms.
 
-// Plan B: EVE route planner with options
-// Library
+//! Plan B: EVE route planner library with options
+//!
+//! This crate provides facilities for routing in the New
+//! Eden universe.
 
 pub mod map;
 pub mod search;
