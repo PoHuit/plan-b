@@ -18,19 +18,37 @@ library: one command-line and one web.
 
 ### Run The Command-Line Client
 
-Say `cargo run -p cmdline --release *start* *dest*` to find and
+Say
+
+        cargo run -p cmdline --release *start* *dest*` to find and
+
 display a shortest route from the system named *start* to
 the system named *dest*. The code will take a couple of
 seconds to load the map, a millisecond or so to find and
 display the route, and then will print all the hops, one per
 line, on stdout.
 
-Say `cargo run -p cmdline --release -- --diameter` to
-calculate the
+Say
+
+        cargo run -p cmdline --release -- --diameter
+
+to calculate the
 [diameter](http://schildwall.phbv3.de/topology.html)
 of New Eden and show the endpoints of the three longest
 shortest routes. The code will take about 10 seconds to
 compute the answer.
+
+### Run The Webserver
+
+Plan B can also run as a web service, powered by the
+[Rocket](https://github.com/SergioBenitez/Rocket)
+Rust web framework. It currently listens on
+`localhost:8000`. To start it, `cd` into the `web/` directory and
+
+        cargo run -p web --release
+
+It will take a couple of seconds to load the EVE map before
+it starts processing requests.
 
 ## Build
 
@@ -76,4 +94,6 @@ software for license terms.
 
 Thanks to Sparky Doosan for the name. Thanks to my EVE
 Online software development class for being part of the
-project.
+project. Thanks to Sergio Benitez *et al* for the Rocket web
+framework, and to the various Rust developers whose crates
+are used by my project.
