@@ -12,6 +12,8 @@
 extern crate rocket;
 use rocket::request::{Form, State};
 use rocket::response::NamedFile;
+use rocket::config::{Config, Environment};
+use rocket::Rocket;
 
 extern crate plan_b;
 use plan_b::*;
@@ -46,7 +48,12 @@ fn search_route(route_spec: Form<RouteSpec>, map: State<Map>) -> Option<String> 
 
 // Plan B web service.
 fn main() {
-    rocket::ignite()
+    let config = Config::build(Environment::Staging)
+        .port(9234)
+        .finalize()
+        .expect("could not configure Rocket");
+
+    Rocket::custom(config, true)
         .manage(Map::fetch().expect("could not load map"))
         .mount("/", routes![front_page, search_route])
         .launch();
