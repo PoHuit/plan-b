@@ -10,5 +10,7 @@ authors = ["Po Huit <eve.po.huit@gmail.com>"]
 
 [dependencies]
 libflate = "0.1"
+serde = "1.0"
 serde_json = "1.0"
+serde_derive = "1.0"
 ndarray = "0.11"

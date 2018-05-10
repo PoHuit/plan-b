@@ -6,33 +6,16 @@
 
 //! Map data management for Plan B.
 
+extern crate serde;
+extern crate serde_json;
+
 extern crate libflate;
 use self::libflate::gzip;
-
-extern crate serde_json;
-use self::serde_json::Value;
 
 use std::error::Error;
 use std::collections::HashMap;
 use std::fs::File;
-use std::fmt;
 use std::slice;
-
-/// Error returned when processing EVE Map Data fails.
-#[derive(Debug)]
-struct MapDataError(&'static str);
-
-impl Error for MapDataError {
-    fn description(&self) -> &'static str {
-        self.0
-    }
-}
-
-impl fmt::Display for MapDataError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "map data error: {}", self.description())
-    }
-}
 
 /// A `SystemId` as defined by CCP.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -60,6 +43,61 @@ pub struct Map {
     by_name: HashMap<String, usize>,
 }
 
+// JSON representations of map data as Rust structs.
+mod json_repr {
+    use std::collections::HashMap;
+
+    #[derive(Deserialize)]
+    pub struct Destination {
+        pub stargate_id: usize,
+        pub system_id: usize,
+    }
+
+    #[derive(Deserialize)]
+    pub struct Point {
+        pub x: f64,
+        pub y: f64,
+        pub z: f64,
+    }
+
+    #[derive(Deserialize)]
+    pub struct Stargate {
+        pub destination: Destination,
+        pub name: String,
+        pub position: Point,
+        pub stargate_id: usize,
+        pub system_id: usize,
+        pub type_id: usize,
+    }
+
+    #[derive(Deserialize)]
+    pub struct Planet {
+        pub asteroid_belts: Option<Vec<usize>>,
+        pub moons: Option<Vec<usize>>,
+        pub planet_id: usize,
+    }
+
+    #[derive(Deserialize)]
+    pub struct System {
+        pub constellation_id: usize,
+        pub name: String,
+        pub planets: Vec<Planet>,
+        pub position: Point,
+        pub security_class: Option<String>,
+        pub security_status: f64,
+        pub star_id: usize,
+        pub stargates: Option<Vec<usize>>,
+        pub stations: Option<Vec<usize>>,
+        pub system_id: usize,
+    }
+
+    #[derive(Deserialize)]
+    pub struct Map {
+        pub stargates: HashMap<usize, Stargate>,
+        pub systems: HashMap<usize, System>,
+    }
+}
+
 impl Map {
 
     /// Retrieve and parse the map data.
@@ -67,64 +105,43 @@ impl Map {
         // Load up the JSON map data.
         let map_file = File::open("/usr/local/share/eve-map.json.gz")?;
         let gunzip = gzip::Decoder::new(map_file)?;
-        let map_data: Value = serde_json::from_reader(gunzip)?;
-
-        // Parse and load the systems and stargates data.
-        let json_systems = map_data["systems"]
-            .as_object()
-            .ok_or_else(|| MapDataError("no systems"))?;
-        let json_stargates = map_data["stargates"]
-            .as_object()
-            .ok_or_else(|| MapDataError("no stargates"))?;
+        let map: json_repr::Map = serde_json::from_reader(gunzip)?;
 
         // Set up the state and process the data.
         let mut by_system_id = HashMap::new();
         let mut by_name = HashMap::new();
-        let mut systems = Vec::with_capacity(json_systems.len());
+        let mut systems = Vec::with_capacity(map.systems.len());
         let mut system_index = 0;
-        for (system_id_str, system) in json_systems {
-            // Get the current system id.
-            let system_id = SystemId(system_id_str.parse().unwrap());
-
-            // Get the current system name.
-            let name = system["name"]
-                .as_str()
-                .ok_or_else(|| MapDataError("no system name"))?
-                .to_string();
+        for (system_id, system) in &map.systems {
+            // Parse the current system id.
+            let system_id = SystemId(*system_id);
 
             // Process the system stargates.
-            let mut stargates = Vec::new();
-            let stargate_ids =
-                match system.get("stargates") {
-                    None => continue,
-                    Some(array) => array
-                        .as_array()
-                        .ok_or_else(|| MapDataError("bad system stargates"))?,
-                };
-            for stargate_id in stargate_ids {
-                let stargate_id_string = stargate_id.to_string();
-                let dest_id = json_stargates[&stargate_id_string]
-                    .as_object()
-                    .ok_or_else(|| MapDataError("bad stargate id"))?
-                    .get("destination")
-                    .ok_or_else(|| MapDataError("no stargate destination"))?
-                    .get("system_id")
-                    .ok_or_else(|| MapDataError("no stargate system id"))?
-                    .as_u64()
-                    .ok_or_else(|| MapDataError("bad stargate system_id"))?;
-                stargates.push(SystemId(dest_id as usize));
+            let stargates: Vec<SystemId>;
+            match system.stargates {
+                None => continue,
+                Some(ref stargate_ids) =>
+                    stargates = stargate_ids
+                        .iter()
+                        .map(|s| {
+                            SystemId(map
+                                     .stargates[s]
+                                     .destination
+                                     .system_id)
+                        })
+                        .collect(),
             }
 
             // Save the system info and update the hashmaps.
             let system_info = SystemInfo {
                 system_id,
-                name: name.clone(),
+                name: system.name.clone(),
                 stargates,
                 system_index,
             };
             systems.push(system_info);
             by_system_id.insert(system_id, system_index);
-            by_name.insert(name, system_index);
+            by_name.insert(system.name.clone(), system_index);
 
             // Increase the system index for the next round.
             system_index += 1;
