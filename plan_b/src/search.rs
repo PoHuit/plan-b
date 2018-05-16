@@ -187,15 +187,15 @@ pub fn shortest_routes_apsp(
             // Probably the easiest fix is to store all
             // next hops in the APSP table.
             let neighbor = map.by_system_id(*neighbor);
-            let hop_dist =
-                match apsp[[neighbor.system_index, goal.system_index]] {
-                    None => {
-                        assert!(neighbor.system_id == goal.system_id);
-                        0
-                    },
-                    Some(hop) => hop.dist,
-                };
-            if hop_dist == dist - 1 {
+            if neighbor.system_id == goal.system_id {
+                assert!(dist == 1);
+                good_neighbors.push(neighbor);
+                break;
+            }
+            let hop =
+                apsp[[neighbor.system_index, goal.system_index]]
+                .expect("missing hop");
+            if hop.dist == dist - 1 {
                 good_neighbors.push(neighbor);
             }
         }
@@ -216,8 +216,8 @@ pub fn shortest_routes_apsp(
                     full.extend(rest);
                     routes.push(full);
                 }
-                return Some(routes);
             }
+            return Some(routes);
         }
         let next = good_neighbors[0];
         route.push(next.system_id);
