@@ -6,9 +6,29 @@
 // Plan B: EVE route planner with options
 // Command-line demo client
 
+#[macro_use]
+extern crate structopt;
 extern crate plan_b;
+
+use structopt::StructOpt;
+
 use plan_b::map::*;
 use plan_b::search::*;
+
+// Command-line arguments
+
+#[derive(StructOpt, Debug)]
+#[structopt(name = "plan-b")]
+struct Opt {
+    #[structopt(short="d", long="diameter")]
+    diameter: bool,
+    #[structopt(short="a", long="all")]
+    all: bool,
+    #[structopt(name="START")]
+    start: String,
+    #[structopt(name="GOAL")]
+    goal: String,
+}
 
 // Look up the given system name in the map, and panic if
 // not found. This should be cleaned up.
@@ -26,6 +46,15 @@ fn find_route(map: &Map, start: &str, goal: &str) -> Vec<SystemId> {
         .expect(&format!("no route found from {} to {}", start, goal))
 }
 
+// Find all shortest routes by name, or panic if none exists.
+fn find_all_routes(map: &Map, start: &str, goal: &str) -> Vec<Vec<SystemId>> {
+    let start_id = find_system(&map, start);
+    let goal_id = find_system(&map, goal);
+    let apsp = apsp(&map);
+    shortest_routes_apsp(&map, &apsp, start_id, goal_id)
+        .expect(&format!("no route found from {} to {}", start, goal))
+}
+
 #[test]
 // Check for correct computation of a long route.
 fn short_route_north_south() {
@@ -34,15 +63,25 @@ fn short_route_north_south() {
     assert_eq!(80, route.len());
 }
 
+// Display a given route, one system per line.
+fn show_route(map: &Map, route: &Vec<SystemId>) {
+    for system_id in route {
+        let system = map.by_system_id(*system_id);
+        println!("{}", system.name);
+    }
+}
+
+
 // Command-line Plan B. */
 fn main() {
     // Set up the map.
     let map = Map::fetch().expect("could not open map");
 
-    // Get and process the first argument.
-    let mut args = std::env::args();
-    let start = (&mut args).skip(1).next().expect("no source");
-    if start == "--diameter" {
+    // Get and process the arguments.
+    let opt = Opt::from_args();
+
+    // Just do diameter.
+    if opt.diameter {
         // Run the diameter calculation and display the result.
         let diameter_info = diameter(&map);
         println!("diameter {}", diameter_info.diameter);
@@ -54,11 +93,19 @@ fn main() {
         return;
     }
 
-    // Get the destination, find the route and display it.
-    let goal = (&mut args).next().expect("no destination");
-    let route = find_route(&map, &start, &goal);
-    for system_id in route {
-        let system = map.by_system_id(system_id);
-        println!("{}", system.name);
+    // Show all routes.
+    if opt.all {
+        let mut routes = find_all_routes(&map, &opt.start, &opt.goal);
+        let last = routes.pop().unwrap();
+        for route in routes {
+            show_route(&map, &route);
+            println!();
+        }
+        show_route(&map, &last);
+        return;
     }
+
+    // Get the destination, find the route and display it.
+    let route = find_route(&map, &opt.start, &opt.goal);
+    show_route(&map, &route);
 }

@@ -10,6 +10,7 @@ authors = ["Po Huit <eve.po.huit@gmail.com>"]
 
 [dependencies]
 plan_b = {path = "../plan_b"}
+structopt = "0.2"
 
 [[bin]]
 name = "plan-b"
