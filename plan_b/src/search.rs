@@ -187,9 +187,15 @@ pub fn shortest_routes_apsp(
             // Probably the easiest fix is to store all
             // next hops in the APSP table.
             let neighbor = map.by_system_id(*neighbor);
-            let hop =
-                apsp[[neighbor.system_index, goal.system_index]].unwrap();
-            if hop.dist == dist - 1 {
+            let hop_dist =
+                match apsp[[neighbor.system_index, goal.system_index]] {
+                    None => {
+                        assert!(neighbor.system_id == goal.system_id);
+                        0
+                    },
+                    Some(hop) => hop.dist,
+                };
+            if hop_dist == dist - 1 {
                 good_neighbors.push(neighbor);
             }
         }
@@ -203,7 +209,7 @@ pub fn shortest_routes_apsp(
                         apsp,
                         neighbor.system_id,
                         goal.system_id,
-                        ).unwrap();
+                        ).expect("could not extend route");
                 for rest in finishes {
                     assert!(rest.len() == dist);
                     let mut full = route.clone();
@@ -270,6 +276,7 @@ pub fn apsp(map: &Map) -> APSPTable {
         let routes = bfs(map, start.system_id, None);
         for waypoint in routes.values() {
             if waypoint.parent.is_none() {
+                assert!(waypoint.cur == start.system_id);
                 continue;
             }
             let cur = map.by_system_id(waypoint.cur);
