@@ -24,10 +24,10 @@ pub struct DiameterInfo {
 }
 
 /// An entry in the all-pairs shortest-path table.
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Hop {
-    /// System id of some next hop.
-    pub system_id: SystemId,
+    /// System indices of next hops.
+    pub next: Vec<usize>,
     /// Distance from start to here.
     pub dist: usize,
 }
@@ -161,9 +161,7 @@ pub fn alt_routes(
 }
 
 /// Reconstruct shortest routes from start to goal, if any,
-/// using the APSP table. XXX Note that the next hop from
-/// the APSP table is useless as it stands, since there may
-/// be other shortest next hops.
+/// using the APSP table.
 pub fn shortest_routes_apsp(
     map: &Map,
     apsp: &APSPTable,
@@ -171,44 +169,27 @@ pub fn shortest_routes_apsp(
     goal: SystemId,
     ) -> Option<Vec<Vec<SystemId>>>
 {
-    let mut start = map.by_system_id(start);
-    let goal = map.by_system_id(goal);
-    let mut dist = apsp[[start.system_index, goal.system_index]]?.dist;
-    let mut routes = Vec::new();
-    let mut route = Vec::new();
-    route.push(start.system_id);
-    while start.system_id != goal.system_id {
+    let systems = map.systems_ref();
+    let mut start = map.by_system_id(start).system_index;
+    let goal = map.by_system_id(goal).system_index;
+    let mut dist = apsp[[start, goal]]?.dist;
+    let mut routes: Vec<Vec<SystemId>> = Vec::new();
+    let mut route: Vec<SystemId> = Vec::new();
+    route.push(systems[start].system_id);
+    while start != goal {
         assert!(dist > 0);
-        let mut good_neighbors = Vec::new();
-        for neighbor in start.stargates.iter() {
-            // XXX These expensive lookups should not be
-            // necessary, but some major reorganization
-            // would be required to do the right thing.
-            // Probably the easiest fix is to store all
-            // next hops in the APSP table.
-            let neighbor = map.by_system_id(*neighbor);
-            if neighbor.system_id == goal.system_id {
-                assert!(dist == 1);
-                good_neighbors.push(neighbor);
-                break;
-            }
-            let hop =
-                apsp[[neighbor.system_index, goal.system_index]]
-                .expect("missing hop");
-            if hop.dist == dist - 1 {
-                good_neighbors.push(neighbor);
-            }
-        }
-        let n = good_neighbors.len();
+        let next_neighbors = apsp[[start, goal]].expect("missing hop").next;
+        let n = next_neighbors.len();
         assert!(n > 0);
         if n > 1 {
-            for neighbor in &good_neighbors {
+            for neighbor in next_neighbors {
+                let neighbor = &systems[neighbor];
                 let finishes =
                     shortest_routes_apsp(
                         map,
                         apsp,
                         neighbor.system_id,
-                        goal.system_id,
+                        systems[goal].system_id,
                         ).expect("could not extend route");
                 for rest in finishes {
                     assert!(rest.len() == dist);
@@ -219,8 +200,8 @@ pub fn shortest_routes_apsp(
             }
             return Some(routes);
         }
-        let next = good_neighbors[0];
-        route.push(next.system_id);
+        let next = next_neighbors[0];
+        route.push(systems[next].system_id);
         dist -= 1;
         start = next;
     }
@@ -282,12 +263,24 @@ pub fn apsp(map: &Map) -> APSPTable {
             let cur = map.by_system_id(waypoint.cur);
             let i = cur.system_index;
             match hops[[i, j]] {
-                Some(hop) if hop.dist <= waypoint.dist => continue,
-                _ => hops[[i, j]] = Some( Hop{
-                    system_id: waypoint.parent.expect("apsp: walked off map"),
-                    dist: waypoint.dist,
-                }),
-            }
+                Some(hop) if hop.dist < waypoint.dist => continue,
+                Some(ref mut hop) => {
+                    if hop.dist > waypoint.dist {
+                        hop.dist = waypoint.dist;
+                        hop.next = Vec::new();
+                    }
+                },
+                None => {
+                    hops[[i, j]] = Some( Hop{
+                        dist: waypoint.dist,
+                        next: Vec::new(),
+                    });
+                },
+            };
+            let system_id = waypoint.parent.expect("apsp: walked off map");
+            let system_index = map.by_system_id(system_id).system_index;
+            // XXX here
+            hops[[i, j]].next.push(system_index);
         }
     }
 
