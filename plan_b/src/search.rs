@@ -172,18 +172,25 @@ pub fn shortest_routes_apsp(
     let systems = map.systems_ref();
     let mut start = map.by_system_id(start).system_index;
     let goal = map.by_system_id(goal).system_index;
-    let mut dist = apsp[[start, goal]]?.dist;
+    let full_hop = match apsp[[start, goal]] {
+        Some(ref hop) => hop,
+        None => return None,
+    };
+    let mut dist = full_hop.dist;
     let mut routes: Vec<Vec<SystemId>> = Vec::new();
     let mut route: Vec<SystemId> = Vec::new();
     route.push(systems[start].system_id);
     while start != goal {
         assert!(dist > 0);
-        let next_neighbors = apsp[[start, goal]].expect("missing hop").next;
+        let next_neighbors = &apsp[[start, goal]]
+            .as_ref()
+            .expect("missing hop")
+            .next;
         let n = next_neighbors.len();
         assert!(n > 0);
         if n > 1 {
             for neighbor in next_neighbors {
-                let neighbor = &systems[neighbor];
+                let neighbor = &systems[*neighbor];
                 let finishes =
                     shortest_routes_apsp(
                         map,
@@ -223,7 +230,7 @@ pub fn diameter(map: &Map) -> DiameterInfo {
     let mut longest = Vec::new();
     for i in 0..n {
         for j in i+1..n {
-            if let Some(hop) = hops[[i, j]] {
+            if let &Some(ref hop) = &hops[[i, j]] {
                 let dist = hop.dist;
                 if dist > diameter {
                     diameter = dist;
@@ -262,25 +269,33 @@ pub fn apsp(map: &Map) -> APSPTable {
             }
             let cur = map.by_system_id(waypoint.cur);
             let i = cur.system_index;
-            match hops[[i, j]] {
-                Some(hop) if hop.dist < waypoint.dist => continue,
-                Some(ref mut hop) => {
-                    if hop.dist > waypoint.dist {
-                        hop.dist = waypoint.dist;
-                        hop.next = Vec::new();
-                    }
-                },
-                None => {
-                    hops[[i, j]] = Some( Hop{
-                        dist: waypoint.dist,
-                        next: Vec::new(),
-                    });
-                },
-            };
+            // XXX This is a disgusting hack and should be
+            // cleaned up.
+            {
+                let hop_entry = &mut hops[[i, j]];
+                match hop_entry {
+                    &mut Some(ref mut hop)
+                        if hop.dist < waypoint.dist => continue,
+                    &mut Some(ref mut hop) => {
+                        if hop.dist > waypoint.dist {
+                            hop.dist = waypoint.dist;
+                            hop.next = Vec::new();
+                        }
+                    },
+                    &mut None => {
+                        *hop_entry = Some( Hop{
+                            dist: waypoint.dist,
+                            next: Vec::new(),
+                        });
+                    },
+                };
+            }
             let system_id = waypoint.parent.expect("apsp: walked off map");
             let system_index = map.by_system_id(system_id).system_index;
-            // XXX here
-            hops[[i, j]].next.push(system_index);
+            hops[[i, j]].as_mut()
+                .expect("hop init failed")
+                .next
+                .push(system_index);
         }
     }
 
