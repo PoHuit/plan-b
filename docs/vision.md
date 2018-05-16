@@ -19,15 +19,18 @@ travel through space.
 ## Partial Roadmap
 
 * Version 0.1, 1 May 2018: Command-line tool. Accepts
-  starting and ending system by name. Computes *k*-shortest
-  routes and displays them in a reasonable ASCII format.
+  starting and ending system by name. Computes shortest
+  route and displays it in a reasonable ASCII format.
 
 * Version 0.2, 8 May 2018: Presents as a browser app.
 
-* Version 0.3, 15 May 2018: Acquires current location via
-  ESI. Can post selected route by setting a waypoint via ESI
-  at each system. Shows next jump during travel.
+* Version 0.3, 15 May 2018: Computes *k*-best routes
+  and displays them in a reasonable ASCII format.
 
-* Version 0.4, 22 May 2018: Provides a visual route map with
+* Version 0.4, 22 May 2018: Acquires current location via
+  ESI. Can post selected route by setting waypoints via ESI.
+  Shows next jump during travel.
+
+* Version 0.3, 29 May 2018: Provides a visual route map with
   a route selection interface. Heuristic prioritizes
   differentiated routes.
