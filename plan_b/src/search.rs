@@ -26,7 +26,7 @@ pub struct DiameterInfo {
 /// An entry in the all-pairs shortest-path table.
 #[derive(Clone, Copy)]
 pub struct Hop {
-    /// System id of next hop.
+    /// System id of some next hop.
     pub system_id: SystemId,
     /// Distance from start to here.
     pub dist: usize,
@@ -116,6 +116,110 @@ pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId)
     // it.
     route.reverse();
     Some(route)
+}
+
+/// Compute and rank all admissable at-most-single-via
+/// alternative routes, returning up to *k* best. Based on a
+/// metric from
+///
+/// > *Alternative Routes in Road Networks*  
+/// > Ittai Abraham, Daniel Delling, Andrew V. Goldberg, Renato F. Werneck  
+/// > Proc. Experimental Algorithms, 9th International Symposium (SEA 2010)  
+/// > Naples, Italy May 2010  
+///
+/// Optimization constraints are:
+///
+/// * `max_routes`: Maximum number of routes to be returned
+///    (including shortest).
+/// * `sharing`: Maximum percentage of sharing of a route
+///    with the shortest route.
+/// * `local_opt`: Percentage of the shortest route length
+///    over which the route must be locally optimal (all subroutes
+///    of this length are shortest routes).
+/// * `ub_stretch`: Percentage of "stretch" (extra jumps
+///    beyond shortest route) allowed along any subroute of a
+///    route.
+///
+/// The objective function is a heuristic based on the
+/// settings of the optimization constraints.
+///
+/// If there is no route from `start` to `goal`, `None` will
+/// be returned. Otherwise, the route list is guaranteed to
+/// include at least the shortest route.
+pub fn alt_routes(
+    _map: &Map,
+    _apsp: &APSPTable,
+    _start: SystemId,
+    _goal: SystemId,
+    _max_routes: usize,
+    _sharing: f64,
+    _local_opt: f64,
+    _ub_stretch: f64
+    ) -> Vec<Vec<SystemId>>
+{
+    unimplemented!("compute alternate routes")
+}
+
+/// Reconstruct shortest routes from start to goal, if any,
+/// using the APSP table. XXX Note that the next hop from
+/// the APSP table is useless as it stands, since there may
+/// be other shortest next hops.
+pub fn shortest_routes_apsp(
+    map: &Map,
+    apsp: &APSPTable,
+    start: SystemId,
+    goal: SystemId,
+    ) -> Option<Vec<Vec<SystemId>>>
+{
+    let mut start = map.by_system_id(start);
+    let goal = map.by_system_id(goal);
+    let mut dist = apsp[[start.system_index, goal.system_index]]?.dist;
+    let mut routes = Vec::new();
+    let mut route = Vec::new();
+    route.push(start.system_id);
+    while start.system_id != goal.system_id {
+        assert!(dist > 0);
+        let mut good_neighbors = Vec::new();
+        for neighbor in start.stargates.iter() {
+            // XXX These expensive lookups should not be
+            // necessary, but some major reorganization
+            // would be required to do the right thing.
+            // Probably the easiest fix is to store all
+            // next hops in the APSP table.
+            let neighbor = map.by_system_id(*neighbor);
+            let hop =
+                apsp[[neighbor.system_index, goal.system_index]].unwrap();
+            if hop.dist == dist - 1 {
+                good_neighbors.push(neighbor);
+            }
+        }
+        let n = good_neighbors.len();
+        assert!(n > 0);
+        if n > 1 {
+            for neighbor in &good_neighbors {
+                let finishes =
+                    shortest_routes_apsp(
+                        map,
+                        apsp,
+                        neighbor.system_id,
+                        goal.system_id,
+                        ).unwrap();
+                for rest in finishes {
+                    assert!(rest.len() == dist);
+                    let mut full = route.clone();
+                    full.extend(rest);
+                    routes.push(full);
+                }
+                return Some(routes);
+            }
+        }
+        let next = good_neighbors[0];
+        route.push(next.system_id);
+        dist -= 1;
+        start = next;
+    }
+    routes.push(route);
+    Some(routes)
 }
 
 /// Compute the diameter of New Eden, with other interesting
