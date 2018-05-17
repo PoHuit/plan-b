@@ -263,39 +263,38 @@ pub fn apsp(map: &Map) -> APSPTable {
         let j = start.system_index;
         let routes = bfs(map, start.system_id, None);
         for waypoint in routes.values() {
-            if waypoint.parent.is_none() {
-                assert!(waypoint.cur == start.system_id);
-                continue;
+            let parent_info = match waypoint.parent {
+                None => {
+                    assert!(waypoint.cur == start.system_id);
+                    continue;
+                },
+                Some(system_id) => {
+                    map.by_system_id(system_id)
+                },
+            };
+            let parent_index = parent_info.system_index;
+            let cur_info = map.by_system_id(waypoint.cur);
+            let i = cur_info.system_index;
+            let mut old_hop = hops[[i, j]].take();
+            match old_hop {
+                Some(mut hop) => {
+                    if hop.dist > waypoint.dist {
+                        hop.dist = waypoint.dist;
+                        hop.next = vec![parent_index];
+                    } else if hop.dist == waypoint.dist {
+                        hop.next.push(parent_index);
+                        println!("multiple {:?}", hop.next);
+                    }
+                    hops[[i, j]] = Some(hop);
+                },
+                None => {
+                    let new_hop = Some(Hop {
+                        dist: waypoint.dist,
+                        next: vec![parent_index],
+                    });
+                    hops[[i, j]] = new_hop;
+                },
             }
-            let cur = map.by_system_id(waypoint.cur);
-            let i = cur.system_index;
-            // XXX This is a disgusting hack and should be
-            // cleaned up.
-            {
-                let hop_entry = &mut hops[[i, j]];
-                match hop_entry {
-                    &mut Some(ref mut hop)
-                        if hop.dist < waypoint.dist => continue,
-                    &mut Some(ref mut hop) => {
-                        if hop.dist > waypoint.dist {
-                            hop.dist = waypoint.dist;
-                            hop.next = Vec::new();
-                        }
-                    },
-                    &mut None => {
-                        *hop_entry = Some( Hop{
-                            dist: waypoint.dist,
-                            next: Vec::new(),
-                        });
-                    },
-                };
-            }
-            let system_id = waypoint.parent.expect("apsp: walked off map");
-            let system_index = map.by_system_id(system_id).system_index;
-            hops[[i, j]].as_mut()
-                .expect("hop init failed")
-                .next
-                .push(system_index);
         }
     }
 
