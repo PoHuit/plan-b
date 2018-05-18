@@ -48,11 +48,14 @@ fn search_route(route_spec: Form<RouteSpec>, map: State<Map>) -> Option<String> 
 
 // Plan B web service.
 fn main() {
+    let port = match std::env::args().nth(1) {
+        None => 9234,
+        Some(p) => p.parse::<u16>().unwrap(),
+    };
     let config = Config::build(Environment::Staging)
-        .port(9234)
+        .port(port)
         .finalize()
         .expect("could not configure Rocket");
-
     Rocket::custom(config, true)
         .manage(Map::fetch().expect("could not load map"))
         .mount("/", routes![front_page, search_route])
