@@ -98,12 +98,28 @@ mod json_repr {
     }
 }
 
+fn find_map_file() -> Result<File, Box<Error>> {
+    let mut f = None;
+    for fname in [
+        "./static/eve-map.json.gz",
+        "./eve-map.json.gz",
+        "/usr/local/share/eve-map.json.gz",
+        ].iter()
+    {
+        f = Some(File::open(fname));
+        if let Some(Ok(f)) = f {
+            return Ok(f);
+        }
+    }
+    f.unwrap().map_err(|e| Box::new(e) as Box<Error>)
+}
+
 impl Map {
 
     /// Retrieve and parse the map data.
     pub fn fetch() -> Result<Map, Box<Error>> {
         // Load up the JSON map data.
-        let map_file = File::open("/usr/local/share/eve-map.json.gz")?;
+        let map_file = find_map_file()?;
         let gunzip = gzip::Decoder::new(map_file)?;
         let map: json_repr::Map = serde_json::from_reader(gunzip)?;
 
