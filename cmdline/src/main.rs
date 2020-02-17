@@ -15,13 +15,13 @@ use plan_b::*;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "plan-b")]
 struct Opt {
-    #[structopt(short="d", long="diameter")]
+    #[structopt(short = "d", long = "diameter")]
     diameter: bool,
-    #[structopt(short="a", long="all")]
+    #[structopt(short = "a", long = "all")]
     all: bool,
-    #[structopt(name="START")]
+    #[structopt(name = "START")]
     start: String,
-    #[structopt(name="GOAL")]
+    #[structopt(name = "GOAL")]
     goal: String,
 }
 
@@ -37,17 +37,23 @@ fn find_system(map: &Map, name: &str) -> SystemId {
 fn find_route(map: &Map, start: &str, goal: &str) -> Vec<SystemId> {
     let start_id = find_system(&map, start);
     let goal_id = find_system(&map, goal);
-    shortest_route(&map, start_id, goal_id)
-        .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
+    shortest_route(&map, start_id, goal_id).unwrap_or_else(|| {
+        panic!("no route found from {} to {}", start, goal)
+    })
 }
 
 // Find all shortest routes by name, or panic if none exists.
-fn find_all_routes(map: &Map, start: &str, goal: &str) -> Vec<Vec<SystemId>> {
+fn find_all_routes(
+    map: &Map,
+    start: &str,
+    goal: &str,
+) -> Vec<Vec<SystemId>> {
     let start_id = find_system(&map, start);
     let goal_id = find_system(&map, goal);
     let apsp = apsp(&map);
-    shortest_routes_apsp(&map, &apsp, start_id, goal_id)
-        .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
+    shortest_routes_apsp(&map, &apsp, start_id, goal_id).unwrap_or_else(
+        || panic!("no route found from {} to {}", start, goal),
+    )
 }
 
 #[test]
@@ -65,7 +71,6 @@ fn show_route(map: &Map, route: &[SystemId]) {
         println!("{}", system.name);
     }
 }
-
 
 // Command-line Plan B. */
 fn main() {

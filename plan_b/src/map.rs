@@ -3,7 +3,6 @@
 // Please see the file LICENSE in the source
 // distribution of this software for license terms.
 
-
 //! Map data management for Plan B.
 
 extern crate serde;
@@ -12,8 +11,8 @@ extern crate serde_json;
 extern crate libflate;
 use self::libflate::gzip;
 
-use std::error::Error;
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs::File;
 use std::slice;
 
@@ -104,7 +103,8 @@ fn find_map_file() -> Result<File, Box<dyn Error>> {
         "./static/eve-map.json.gz",
         "./eve-map.json.gz",
         "/usr/local/share/eve-map.json.gz",
-        ].iter()
+    ]
+    .iter()
     {
         f = Some(File::open(fname));
         if let Some(Ok(f)) = f {
@@ -115,7 +115,6 @@ fn find_map_file() -> Result<File, Box<dyn Error>> {
 }
 
 impl Map {
-
     /// Retrieve and parse the map data.
     pub fn fetch() -> Result<Map, Box<dyn Error>> {
         // Load up the JSON map data.
@@ -136,16 +135,16 @@ impl Map {
             let stargates: Vec<SystemId>;
             match system.stargates {
                 None => continue,
-                Some(ref stargate_ids) =>
+                Some(ref stargate_ids) => {
                     stargates = stargate_ids
                         .iter()
                         .map(|s| {
-                            SystemId(map
-                                     .stargates[s]
-                                     .destination
-                                     .system_id)
+                            SystemId(
+                                map.stargates[s].destination.system_id,
+                            )
                         })
-                        .collect(),
+                        .collect()
+                }
             }
 
             // Save the system info and update the hashmaps.
@@ -163,22 +162,28 @@ impl Map {
             system_index += 1;
         }
         // Return the now-completed map.
-        Ok(Map{systems, by_system_id, by_name})
+        Ok(Map {
+            systems,
+            by_system_id,
+            by_name,
+        })
     }
 
     /// Return some reference to the system info for the system
     /// with the given name, if found.
-    pub fn by_name<'a>(&'a self, name: &'a str) -> Option<&'a SystemInfo> {
-        self
-            .by_name.get(name)
-            .map(|i| &self.systems[*i])
+    pub fn by_name<'a>(
+        &'a self,
+        name: &'a str,
+    ) -> Option<&'a SystemInfo> {
+        self.by_name.get(name).map(|i| &self.systems[*i])
     }
 
     /// Return some reference to the system info for the system
     /// with the given system id.
     pub fn by_system_id(&self, id: SystemId) -> &SystemInfo {
         let i = self
-            .by_system_id.get(&id)
+            .by_system_id
+            .get(&id)
             .expect("by_system_id: invalid SystemId");
         &self.systems[*i]
     }

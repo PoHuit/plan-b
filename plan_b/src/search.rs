@@ -6,11 +6,11 @@
 //! Search functionality for Plan B.
 
 use std::cmp::Ordering;
-use std::collections::VecDeque;
 use std::collections::HashMap;
+use std::collections::VecDeque;
 
 use ndarray::Array2;
-    
+
 use crate::map::*;
 
 /// Results from a `diameter()` calculation.
@@ -47,18 +47,22 @@ struct Waypoint {
 
 impl Waypoint {
     /// Create a new waypoint; mild syntactic sugar.
-    fn new(dist: usize, cur: SystemId, parent: Option<SystemId>)
-           -> Waypoint
-    {
-        Waypoint{dist, cur, parent}
+    fn new(
+        dist: usize,
+        cur: SystemId,
+        parent: Option<SystemId>,
+    ) -> Waypoint {
+        Waypoint { dist, cur, parent }
     }
 }
 
 // Single-source shortest path via Breadth-First Search.
 // Returns a waypoint map for further processing.
-fn bfs(map: &Map, start: SystemId, goal: Option<SystemId>)
-            -> HashMap<SystemId, Waypoint>
-{
+fn bfs(
+    map: &Map,
+    start: SystemId,
+    goal: Option<SystemId>,
+) -> HashMap<SystemId, Waypoint> {
     // Set up data structures and run the search.
     let mut q = VecDeque::with_capacity(map.systems_ref().len());
     let mut closed = HashMap::new();
@@ -91,12 +95,13 @@ fn bfs(map: &Map, start: SystemId, goal: Option<SystemId>)
         }
     }
 }
-    
 
 /// Return a shortest route if one exists.
-pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId)
-                      -> Option<Vec<SystemId>>
-{
+pub fn shortest_route(
+    map: &Map,
+    start: SystemId,
+    goal: SystemId,
+) -> Option<Vec<SystemId>> {
     // Find single-source shortest paths from start up to goal.
     let waypoints = bfs(map, start, Some(goal));
 
@@ -154,9 +159,8 @@ pub fn alt_routes(
     _max_routes: usize,
     _sharing: f64,
     _local_opt: f64,
-    _ub_stretch: f64
-    ) -> Vec<Vec<SystemId>>
-{
+    _ub_stretch: f64,
+) -> Vec<Vec<SystemId>> {
     unimplemented!("compute alternate routes")
 }
 
@@ -167,8 +171,7 @@ pub fn shortest_routes_apsp(
     apsp: &APSPTable,
     start: SystemId,
     goal: SystemId,
-    ) -> Option<Vec<Vec<SystemId>>>
-{
+) -> Option<Vec<Vec<SystemId>>> {
     let systems = map.systems_ref();
     let mut start = map.by_system_id(start).system_index;
     let goal = map.by_system_id(goal).system_index;
@@ -182,22 +185,20 @@ pub fn shortest_routes_apsp(
     route.push(systems[start].system_id);
     while start != goal {
         assert!(dist > 0);
-        let next_neighbors = &apsp[[start, goal]]
-            .as_ref()
-            .expect("missing hop")
-            .next;
+        let next_neighbors =
+            &apsp[[start, goal]].as_ref().expect("missing hop").next;
         let n = next_neighbors.len();
         assert!(n > 0);
         if n > 1 {
             for neighbor in next_neighbors {
                 let neighbor = &systems[*neighbor];
-                let finishes =
-                    shortest_routes_apsp(
-                        map,
-                        apsp,
-                        neighbor.system_id,
-                        systems[goal].system_id,
-                        ).expect("could not extend route");
+                let finishes = shortest_routes_apsp(
+                    map,
+                    apsp,
+                    neighbor.system_id,
+                    systems[goal].system_id,
+                )
+                .expect("could not extend route");
                 for rest in finishes {
                     assert!(rest.len() == dist);
                     let mut full = route.clone();
@@ -229,7 +230,7 @@ pub fn diameter(map: &Map) -> DiameterInfo {
     let mut diameter = 0;
     let mut longest = Vec::new();
     for i in 0..n {
-        for j in i+1..n {
+        for j in i + 1..n {
             if let Some(ref hop) = &hops[[i, j]] {
                 let dist = hop.dist;
                 if dist > diameter {
@@ -246,7 +247,7 @@ pub fn diameter(map: &Map) -> DiameterInfo {
     }
 
     // Return the accumulated info.
-    DiameterInfo{diameter, longest}
+    DiameterInfo { diameter, longest }
 }
 
 /// Compute an all-pairs shortest-path route table.
@@ -254,8 +255,7 @@ pub fn apsp(map: &Map) -> APSPTable {
     // Set up necessary info.
     let systems = map.systems_ref();
     let n = systems.len();
-    let mut hops: Array2<Option<Hop>> =
-        Array2::from_elem((n, n), None);
+    let mut hops: Array2<Option<Hop>> = Array2::from_elem((n, n), None);
 
     // Use iterated single-source shortest-path search to update
     // all hops.
@@ -267,10 +267,8 @@ pub fn apsp(map: &Map) -> APSPTable {
                 None => {
                     assert!(waypoint.cur == start.system_id);
                     continue;
-                },
-                Some(system_id) => {
-                    map.by_system_id(system_id)
-                },
+                }
+                Some(system_id) => map.by_system_id(system_id),
             };
             let parent_index = parent_info.system_index;
             let cur_info = map.by_system_id(waypoint.cur);
@@ -290,14 +288,14 @@ pub fn apsp(map: &Map) -> APSPTable {
                         Ordering::Less => (),
                     }
                     hops[[i, j]] = Some(hop);
-                },
+                }
                 None => {
                     let new_hop = Some(Hop {
                         dist: waypoint.dist,
                         next: vec![parent_index],
                     });
                     hops[[i, j]] = new_hop;
-                },
+                }
             }
         }
     }
