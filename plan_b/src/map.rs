@@ -5,16 +5,12 @@
 
 //! Map data management for Plan B.
 
-extern crate serde;
-extern crate serde_json;
-
-extern crate libflate;
-use self::libflate::gzip;
-
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::slice;
+
+use libflate::gzip;
 
 /// A `SystemId` as defined by CCP.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

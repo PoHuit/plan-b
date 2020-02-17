@@ -15,7 +15,6 @@ use rocket::request::{Form, State};
 use rocket::response::NamedFile;
 use rocket::Rocket;
 
-extern crate plan_b;
 use plan_b::*;
 
 // Need to wrap the EVE route spec for use in endpoints.
