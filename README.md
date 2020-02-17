@@ -9,6 +9,8 @@ also (hence the name).
 This is very much a work-in-progress. See `vision.md` and
 `reqs.md` in `docs/` for a roadmap and status.
 
+See *Build* below for detailed build instructions.
+
 ## Usage
 
 The core of this project is a Rust library "crate",
@@ -18,11 +20,11 @@ library: one command-line and one web.
 
 ### Run The Command-Line Client
 
-Say
+First follow the *Build* instructions below. Then
 
         cargo run -p cmdline --release *start* *dest*` to find and
 
-display a shortest route from the system named *start* to
+to display a shortest route from the system named *start* to
 the system named *dest*. The code will take a couple of
 seconds to load the map, a millisecond or so to find and
 display the route, and then will print all the hops, one per
@@ -42,13 +44,16 @@ compute the answer.
 
 Plan B can also run as a web service, powered by the
 [Rocket](https://github.com/SergioBenitez/Rocket)
-Rust web framework. It currently listens on
-`localhost:8000`. To start it, `cd` into the `web/` directory and
+Rust web framework. 
+
+First follow the *Build* instructions below. Then, to start
+Plan B Web, `cd` into the `web/` directory and
 
         cargo run -p web --release
 
 It will take a couple of seconds to load the EVE map before
-it starts processing requests.
+the server starts processing requests. The server currently
+listens on `localhost:8000`.
 
 ## Build
 
@@ -74,6 +79,15 @@ using
 [ESI](http://eveonline-third-party-documentation.readthedocs.io/en/latest/esi/).
 Compress this file with `gzip` and you're ready to proceed
 as above.
+
+### Set Up Nightly
+
+Because of the use of the Rocket framework, you will want to
+set the toolchain to correspond to a known nightly before
+you start. Currently this is known to work (with Rocket
+0.4.2):
+
+    rustup override set nightly-2020-02-06
 
 ### Build The Rust Code
 
