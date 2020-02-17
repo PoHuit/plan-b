@@ -5,13 +5,12 @@
 
 //! Search functionality for Plan B.
 
-extern crate ndarray;
-
-use self::ndarray::Array2;
-    
+use std::cmp::Ordering;
 use std::collections::VecDeque;
 use std::collections::HashMap;
 
+use ndarray::Array2;
+    
 use crate::map::*;
 
 /// Results from a `diameter()` calculation.
@@ -146,6 +145,7 @@ pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId)
 /// If there is no route from `start` to `goal`, `None` will
 /// be returned. Otherwise, the route list is guaranteed to
 /// include at least the shortest route.
+#[allow(clippy::too_many_arguments)]
 pub fn alt_routes(
     _map: &Map,
     _apsp: &APSPTable,
@@ -230,7 +230,7 @@ pub fn diameter(map: &Map) -> DiameterInfo {
     let mut longest = Vec::new();
     for i in 0..n {
         for j in i+1..n {
-            if let &Some(ref hop) = &hops[[i, j]] {
+            if let Some(ref hop) = &hops[[i, j]] {
                 let dist = hop.dist;
                 if dist > diameter {
                     diameter = dist;
@@ -278,12 +278,16 @@ pub fn apsp(map: &Map) -> APSPTable {
             let old_hop = hops[[i, j]].take();
             match old_hop {
                 Some(mut hop) => {
-                    if hop.dist > waypoint.dist {
-                        hop.dist = waypoint.dist;
-                        hop.next = vec![parent_index];
-                    } else if hop.dist == waypoint.dist {
-                        hop.next.push(parent_index);
-                        println!("multiple {:?}", hop.next);
+                    match hop.dist.cmp(&waypoint.dist) {
+                        Ordering::Greater => {
+                            hop.dist = waypoint.dist;
+                            hop.next = vec![parent_index];
+                        }
+                        Ordering::Equal => {
+                            hop.next.push(parent_index);
+                            println!("multiple {:?}", hop.next);
+                        }
+                        Ordering::Less => (),
                     }
                     hops[[i, j]] = Some(hop);
                 },

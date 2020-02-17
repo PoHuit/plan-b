@@ -29,7 +29,7 @@ struct Opt {
 // not found. This should be cleaned up.
 fn find_system(map: &Map, name: &str) -> SystemId {
     map.by_name(name)
-        .expect(&format!("could not find {} in map", name))
+        .unwrap_or_else(|| panic!("could not find {} in map", name))
         .system_id
 }
 
@@ -38,7 +38,7 @@ fn find_route(map: &Map, start: &str, goal: &str) -> Vec<SystemId> {
     let start_id = find_system(&map, start);
     let goal_id = find_system(&map, goal);
     shortest_route(&map, start_id, goal_id)
-        .expect(&format!("no route found from {} to {}", start, goal))
+        .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
 }
 
 // Find all shortest routes by name, or panic if none exists.
@@ -47,7 +47,7 @@ fn find_all_routes(map: &Map, start: &str, goal: &str) -> Vec<Vec<SystemId>> {
     let goal_id = find_system(&map, goal);
     let apsp = apsp(&map);
     shortest_routes_apsp(&map, &apsp, start_id, goal_id)
-        .expect(&format!("no route found from {} to {}", start, goal))
+        .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
 }
 
 #[test]
@@ -59,7 +59,7 @@ fn short_route_north_south() {
 }
 
 // Display a given route, one system per line.
-fn show_route(map: &Map, route: &Vec<SystemId>) {
+fn show_route(map: &Map, route: &[SystemId]) {
     for system_id in route {
         let system = map.by_system_id(*system_id);
         println!("{}", system.name);

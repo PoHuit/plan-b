@@ -176,7 +176,7 @@ impl Map {
 
     /// Return some reference to the system info for the system
     /// with the given system id.
-    pub fn by_system_id<'a>(&'a self, id: SystemId) -> &'a SystemInfo {
+    pub fn by_system_id(&self, id: SystemId) -> &SystemInfo {
         let i = self
             .by_system_id.get(&id)
             .expect("by_system_id: invalid SystemId");
@@ -185,12 +185,12 @@ impl Map {
 
     /// Return an iterator over the system info of all
     /// systems in the map.
-    pub fn systems<'a>(&'a self) -> slice::Iter<'a, SystemInfo> {
+    pub fn systems(&self) -> slice::Iter<'_, SystemInfo> {
         self.systems.iter()
     }
 
     /// Return a slice of all systems in the map.
-    pub fn systems_ref<'a>(&'a self) -> &'a [SystemInfo] {
+    pub fn systems_ref(&self) -> &[SystemInfo] {
         &self.systems
     }
 }
