@@ -12,7 +12,7 @@ use self::ndarray::Array2;
 use std::collections::VecDeque;
 use std::collections::HashMap;
 
-use map::*;
+use crate::map::*;
 
 /// Results from a `diameter()` calculation.
 pub struct DiameterInfo {
@@ -275,7 +275,7 @@ pub fn apsp(map: &Map) -> APSPTable {
             let parent_index = parent_info.system_index;
             let cur_info = map.by_system_id(waypoint.cur);
             let i = cur_info.system_index;
-            let mut old_hop = hops[[i, j]].take();
+            let old_hop = hops[[i, j]].take();
             match old_hop {
                 Some(mut hop) => {
                     if hop.dist > waypoint.dist {

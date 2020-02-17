@@ -5,12 +5,13 @@
 
 [package]
 name = "plan_b"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Po Huit <eve.po.huit@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-libflate = "0.1"
-serde = "1.0"
-serde_json = "1.0"
-serde_derive = "1.0"
-ndarray = "0.11"
+libflate = "0"
+serde = "1"
+serde_json = "1"
+serde_derive = "1"
+ndarray = "0"

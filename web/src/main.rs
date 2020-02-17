@@ -6,9 +6,9 @@
 // Plan B: EVE route planner with options
 // Web client
 
-#![feature(plugin, custom_derive)]
-#![plugin(rocket_codegen)]
+#![feature(proc_macro_hygiene, decl_macro)]
 
+#[macro_use]
 extern crate rocket;
 use rocket::request::{Form, State};
 use rocket::response::NamedFile;
@@ -35,7 +35,6 @@ fn front_page() -> std::io::Result<NamedFile> {
 // Process an EVE route request.
 #[post("/", data = "<route_spec>")]
 fn search_route(route_spec: Form<RouteSpec>, map: State<Map>) -> Option<String> {
-    let route_spec = route_spec.get();
     let from = map.by_name(&route_spec.from)?;
     let to = map.by_name(&route_spec.to)?;
     let route: Vec<String> =
@@ -56,7 +55,7 @@ fn main() {
         .port(port)
         .finalize()
         .expect("could not configure Rocket");
-    Rocket::custom(config, true)
+    Rocket::custom(config)
         .manage(Map::fetch().expect("could not load map"))
         .mount("/", routes![front_page, search_route])
         .launch();

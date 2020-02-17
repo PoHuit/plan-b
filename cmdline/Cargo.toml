@@ -5,12 +5,13 @@
 
 [package]
 name = "cmdline"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Po Huit <eve.po.huit@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 plan_b = {path = "../plan_b"}
-structopt = "0.2"
+structopt = "0"
 
 [[bin]]
 name = "plan-b"

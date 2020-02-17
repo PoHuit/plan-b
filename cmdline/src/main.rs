@@ -6,14 +6,9 @@
 // Plan B: EVE route planner with options
 // Command-line demo client
 
-#[macro_use]
-extern crate structopt;
-extern crate plan_b;
-
 use structopt::StructOpt;
 
-use plan_b::map::*;
-use plan_b::search::*;
+use plan_b::*;
 
 // Command-line arguments
 

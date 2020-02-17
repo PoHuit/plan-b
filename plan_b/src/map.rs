@@ -98,7 +98,7 @@ mod json_repr {
     }
 }
 
-fn find_map_file() -> Result<File, Box<Error>> {
+fn find_map_file() -> Result<File, Box<dyn Error>> {
     let mut f = None;
     for fname in [
         "./static/eve-map.json.gz",
@@ -111,13 +111,13 @@ fn find_map_file() -> Result<File, Box<Error>> {
             return Ok(f);
         }
     }
-    f.unwrap().map_err(|e| Box::new(e) as Box<Error>)
+    f.unwrap().map_err(|e| Box::new(e) as Box<dyn Error>)
 }
 
 impl Map {
 
     /// Retrieve and parse the map data.
-    pub fn fetch() -> Result<Map, Box<Error>> {
+    pub fn fetch() -> Result<Map, Box<dyn Error>> {
         // Load up the JSON map data.
         let map_file = find_map_file()?;
         let gunzip = gzip::Decoder::new(map_file)?;
