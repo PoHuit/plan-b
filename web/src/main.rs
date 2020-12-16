@@ -6,10 +6,6 @@
 // Plan B: EVE route planner with options
 // Web client
 
-#![feature(proc_macro_hygiene, decl_macro)]
-
-use std::path::PathBuf;
-
 #[macro_use]
 extern crate rocket;
 use rocket::request::{Form, State};
@@ -31,7 +27,7 @@ struct StaticPath(PathBuf);
 
 // Display the Plan B front page.
 #[get("/")]
-fn front_page(static_path: State<StaticPath>) ->
+async fn front_page(static_path: State<StaticPath>) ->
     Result<NamedFile, rocket::response::Debug<std::io::Error>>
 {
     let path = static_path.0.join("plan-b.html");
@@ -49,9 +45,9 @@ fn favicon(static_path: State<StaticPath>) ->
 
 // Process an EVE route request.
 #[post("/", data = "<route_spec>")]
-fn search_route(
+async fn search_route(
     route_spec: Form<RouteSpec>,
-    map: State<Map>,
+    map: State<'_, Map>,
 ) -> Option<String> {
     let from = map.by_name(&route_spec.from)?;
     let to = map.by_name(&route_spec.to)?;
@@ -66,7 +62,8 @@ fn search_route(
 }
 
 // Plan B web service.
-fn main() {
+#[rocket::launch]
+fn rocket() -> rocket::Rocket {
     Rocket::ignite()
         .attach(AdHoc::on_attach("Static Path", |rocket| {
             let static_path = rocket
@@ -81,7 +78,6 @@ fn main() {
             };
             Ok(rocket.manage(StaticPath(static_path)))
         }))
-        .manage(Map::fetch().expect("could not load map"))
         .mount("/", routes![front_page, favicon, search_route])
         .launch();
 }
