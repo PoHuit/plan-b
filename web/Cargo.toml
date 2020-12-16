@@ -11,8 +11,14 @@ edition = "2018"
 
 [dependencies]
 plan_b = {path = "../plan_b"}
-rocket = "=0.4.6"
-rocket_codegen = "=0.4.6"
+
+[dependencies.rocket]
+version = "0.5.0-dev"
+git = "https://github.com/SergioBenitez/Rocket"
+
+[dependencies.rocket_codegen]
+version = "0.5.0-dev"
+git = "https://github.com/SergioBenitez/Rocket"
 
 [[bin]]
 name = "plan-b-web"
