@@ -26,8 +26,8 @@ struct RouteSpec {
 
 // Display the Plan B front page.
 #[get("/")]
-fn front_page() -> std::io::Result<NamedFile> {
-    NamedFile::open("static/plan-b.html")
+fn front_page() -> Result<NamedFile, rocket::response::Debug<std::io::Error>> {
+    Ok(NamedFile::open("plan-b.html")?)
 }
 
 // Process an EVE route request.
