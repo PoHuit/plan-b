@@ -12,7 +12,7 @@ from sys import stdout, stderr
 import threading
 
 # Where to fetch the maps from.
-esi_endpoint = "esi.tech.ccp.is"
+esi_endpoint = "esi.evetech.net"
 # What version to fetch.
 esi_version = "latest"
 # Number of retries before giving up.

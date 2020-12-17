@@ -42,6 +42,38 @@ pub struct Map {
 mod json_repr {
     use std::collections::HashMap;
 
+    use std::str::FromStr;
+    use serde::{de, Deserialize, Deserializer};
+    use serde_json::{self, Value};
+
+    fn de_from_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let v = Value::deserialize(deserializer)?;
+        let e = "an f64 literal or string";
+        match v {
+            Value::Number(v) => Ok(v.as_f64().unwrap()),
+            Value::String(s) => f64::from_str(&s).map_err(de::Error::custom),
+            Value::Null => {
+                let ue = de::Unexpected::Other("null");
+                Err(de::Error::invalid_value(ue, &e))
+            }
+            Value::Bool(b) => {
+                let ue = de::Unexpected::Bool(b);
+                Err(de::Error::invalid_value(ue, &e))
+            }
+            Value::Array(_) => {
+                let ue = de::Unexpected::Seq;
+                Err(de::Error::invalid_value(ue, &e))
+            }
+            Value::Object(_) => {
+                let ue = de::Unexpected::Map;
+                Err(de::Error::invalid_value(ue, &e))
+            }
+        }
+    }
+
     #[derive(Deserialize)]
     pub struct Destination {
         pub stargate_id: usize,
@@ -50,8 +82,11 @@ mod json_repr {
 
     #[derive(Deserialize)]
     pub struct Point {
+        #[serde(deserialize_with = "de_from_f64")]
         pub x: f64,
+        #[serde(deserialize_with = "de_from_f64")]
         pub y: f64,
+        #[serde(deserialize_with = "de_from_f64")]
         pub z: f64,
     }
 
@@ -76,11 +111,11 @@ mod json_repr {
     pub struct System {
         pub constellation_id: usize,
         pub name: String,
-        pub planets: Vec<Planet>,
+        pub planets: Option<Vec<Planet>>,
         pub position: Point,
         pub security_class: Option<String>,
         pub security_status: f64,
-        pub star_id: usize,
+        pub star_id: Option<usize>,
         pub stargates: Option<Vec<usize>>,
         pub stations: Option<Vec<usize>>,
         pub system_id: usize,

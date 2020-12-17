@@ -22,13 +22,13 @@ library: one command-line and one web.
 
 First follow the *Build* instructions below. Then
 
-        cargo run -p cmdline --release *start* *dest*` to find and
+    cargo run -p cmdline --release <start> <dest>
 
-to display a shortest route from the system named *start* to
-the system named *dest*. The code will take a couple of
-seconds to load the map, a millisecond or so to find and
-display the route, and then will print all the hops, one per
-line, on stdout.
+to find and to display a shortest route from the system
+named *start* to the system named *dest*. The code will take
+a few seconds to load the map, a millisecond or so to find
+and display the route, and then will print all the hops, one
+per line, on stdout.
 
 Say
 
