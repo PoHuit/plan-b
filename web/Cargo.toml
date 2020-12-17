@@ -11,8 +11,8 @@ edition = "2018"
 
 [dependencies]
 plan_b = {path = "../plan_b"}
-rocket = "0.4"
-rocket_codegen = "0.4"
+rocket = "=0.4.6"
+rocket_codegen = "=0.4.6"
 
 [[bin]]
 name = "plan-b-web"

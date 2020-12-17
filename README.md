@@ -84,7 +84,7 @@ as above.
 Because of the use of the Rocket framework, you will want to
 set the toolchain to correspond to a known nightly before
 you start. Currently this is known to work (with Rocket
-0.4.2):
+0.4.6):
 
     rustup override set nightly-2020-11-22
 
