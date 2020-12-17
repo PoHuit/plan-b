@@ -10,7 +10,6 @@
 
 #[macro_use]
 extern crate rocket;
-use rocket::config::{Config, Environment};
 use rocket::request::{Form, State};
 use rocket::response::NamedFile;
 use rocket::Rocket;
@@ -51,15 +50,7 @@ fn search_route(
 
 // Plan B web service.
 fn main() {
-    let port = match std::env::args().nth(1) {
-        None => 9234,
-        Some(p) => p.parse::<u16>().unwrap(),
-    };
-    let config = Config::build(Environment::Staging)
-        .port(port)
-        .finalize()
-        .expect("could not configure Rocket");
-    Rocket::custom(config)
+    Rocket::ignite()
         .manage(Map::fetch().expect("could not load map"))
         .mount("/", routes![front_page, search_route])
         .launch();
