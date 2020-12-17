@@ -38,6 +38,15 @@ fn front_page(static_path: State<StaticPath>) ->
     Ok(NamedFile::open(path)?)
 }
 
+// Display the Plan B favicon.
+#[get("/favicon.ico")]
+fn favicon(static_path: State<StaticPath>) ->
+    Result<NamedFile, rocket::response::Debug<std::io::Error>>
+{
+    let path = static_path.0.join("plan-b-favicon.ico");
+    Ok(NamedFile::open(path)?)
+}
+
 // Process an EVE route request.
 #[post("/", data = "<route_spec>")]
 fn search_route(
@@ -73,6 +82,6 @@ fn main() {
             Ok(rocket.manage(StaticPath(static_path)))
         }))
         .manage(Map::fetch().expect("could not load map"))
-        .mount("/", routes![front_page, search_route])
+        .mount("/", routes![front_page, favicon, search_route])
         .launch();
 }

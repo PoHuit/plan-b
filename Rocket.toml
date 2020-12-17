@@ -1,4 +1,4 @@
 [global]
 address = "0.0.0.0"
-port = 4192
+port = 9146
 static = "web/static"
