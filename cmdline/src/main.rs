@@ -14,15 +14,16 @@ use plan_b::*;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "plan-b")]
-struct Opt {
-    #[structopt(short = "d", long = "diameter")]
-    diameter: bool,
-    #[structopt(short = "a", long = "all")]
-    all: bool,
-    #[structopt(name = "START")]
-    start: String,
-    #[structopt(name = "GOAL")]
-    goal: String,
+enum Opt {
+    Diameter,
+    Route {
+        #[structopt(short = "a", long = "all")]
+        all: bool,
+        #[structopt(name = "START")]
+        start: String,
+        #[structopt(name = "GOAL")]
+        goal: String,
+    }
 }
 
 // Look up the given system name in the map, and panic if
@@ -81,31 +82,32 @@ fn main() {
     let opt = Opt::from_args();
 
     // Just do diameter.
-    if opt.diameter {
-        // Run the diameter calculation and display the result.
-        let diameter_info = diameter(&map);
-        println!("diameter {}", diameter_info.diameter);
-        for (start, end) in diameter_info.longest {
-            let start = &map.by_system_id(start).name;
-            let end = &map.by_system_id(end).name;
-            println!("{} → {}", start, end);
+    match opt {
+        Opt::Diameter => {
+            // Run the diameter calculation and display the result.
+            let diameter_info = diameter(&map);
+            println!("diameter {}", diameter_info.diameter);
+            for (start, end) in diameter_info.longest {
+                let start = &map.by_system_id(start).name;
+                let end = &map.by_system_id(end).name;
+                println!("{} → {}", start, end);
+            }
         }
-        return;
-    }
-
-    // Show all routes.
-    if opt.all {
-        let mut routes = find_all_routes(&map, &opt.start, &opt.goal);
-        let last = routes.pop().unwrap();
-        for route in routes {
+        Opt::Route { all, start, goal } => {
+            // Show all routes.
+            if all {
+                let mut routes = find_all_routes(&map, &start, &goal);
+                let last = routes.pop().unwrap();
+                for route in routes {
+                    show_route(&map, &route);
+                    println!();
+                }
+                show_route(&map, &last);
+                return;
+            }
+            // Get the destination, find the route and display it.
+            let route = find_route(&map, &start, &goal);
             show_route(&map, &route);
-            println!();
         }
-        show_route(&map, &last);
-        return;
     }
-
-    // Get the destination, find the route and display it.
-    let route = find_route(&map, &opt.start, &opt.goal);
-    show_route(&map, &route);
 }

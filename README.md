@@ -22,7 +22,7 @@ library: one command-line and one web.
 
 First follow the *Build* instructions below. Then
 
-    cargo run -p cmdline --release <start> <dest>
+    cargo run -p cmdline --release route <start> <dest>
 
 to find and to display a shortest route from the system
 named *start* to the system named *dest*. The code will take
@@ -32,12 +32,12 @@ per line, on stdout.
 
 Say
 
-        cargo run -p cmdline --release -- --diameter
+    cargo run -p cmdline --release diameter
 
 to calculate the
 [diameter](http://schildwall.phbv3.de/topology.html)
 of New Eden and show the endpoints of the three longest
-shortest routes. The code will take about 10 seconds to
+shortest routes. The code will take a few seconds to
 compute the answer.
 
 ### Run The Webserver
@@ -49,7 +49,7 @@ Rust web framework.
 First follow the *Build* instructions below. Then, to start
 Plan B Web, `cd` into the `web/` directory and
 
-        cargo run -p web --release
+    cargo run -p web --release
 
 It will take a couple of seconds to load the EVE map before
 the server starts processing requests. The server currently
@@ -58,7 +58,7 @@ listens on `localhost:8000`.
 ## Build
 
 This project is written mostly in Rust, with a little Python
-3 for convenience. It has only been used/tested on Linux.
+for convenience. It has only been used/tested on Linux.
 The build process is reasonably simple.
 
 ### Get The Map Data (Optional)
@@ -66,16 +66,15 @@ The build process is reasonably simple.
 I have included `eve-map.json.gz` in the repository
 top-level containing EVE System and Stargate data in
 compressed JSON. Copy this file to `/usr/local/share` on
-your box and you should be set. Since EVE Systems and
-Stargates normally never change, this should be the standard
-way to set things up.
+your box and ideally you should be set.
 
-If you want to regenerate this data, go to the `fetch-map`
+EVE Systems and Stargates have been changing recently.  If
+you need to regather the map data, go to the `fetch-map`
 directory and run `python3 fetch-map.py`. This should run
-for about 30 minutes with a decent Internet connection, and
-will create `eve-map.json` by fetching the necessary data
-from [CCP](https://www.ccpgames.com/)'s Tranquility server
-using
+for less than 30 minutes with a decent Internet connection,
+and will create `eve-map.json` by fetching the necessary
+data from [CCP](https://www.ccpgames.com/)'s Tranquility
+server using
 [ESI](http://eveonline-third-party-documentation.readthedocs.io/en/latest/esi/).
 Compress this file with `gzip` and you're ready to proceed
 as above.
@@ -87,7 +86,7 @@ set the toolchain to correspond to a known nightly before
 you start. Currently this is known to work (with Rocket
 0.4.2):
 
-    rustup override set nightly-2020-02-06
+    rustup override set nightly-2020-11-22
 
 ### Build The Rust Code
 
@@ -95,7 +94,7 @@ you start. Currently this is known to work (with Rocket
 
 2. Run `cargo build --release` from the top-level directory.
 
-The build will take a minute or so, and then the code should
+The build will take a few minutes, and then the code should
 be ready to go.
 
 ## License
