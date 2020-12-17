@@ -53,7 +53,7 @@ Plan B Web, `cd` into the `web/` directory and
 
 It will take a couple of seconds to load the EVE map before
 the server starts processing requests. The server currently
-listens on `localhost:8000`.
+listens on `localhost:9146`.
 
 ## Build
 
