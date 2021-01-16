@@ -83,15 +83,6 @@ server using
 Compress this file with `gzip` and you're ready to proceed
 as above.
 
-### Set Up Nightly
-
-Because of the use of the Rocket framework, you will want to
-set the toolchain to correspond to a known nightly before
-you start. Currently this is known to work (with Rocket
-0.4.6):
-
-    rustup override set nightly-2020-11-22
-
 ### Build The Rust Code
 
 1. Get the relevant version of Rust installed on your
