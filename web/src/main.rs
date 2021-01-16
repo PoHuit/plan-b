@@ -6,6 +6,8 @@
 // Plan B: EVE route planner with options
 // Web client
 
+use std::path::PathBuf;
+
 #[macro_use]
 extern crate rocket;
 use rocket::request::{Form, State};
@@ -27,20 +29,20 @@ struct StaticPath(PathBuf);
 
 // Display the Plan B front page.
 #[get("/")]
-async fn front_page(static_path: State<StaticPath>) ->
+async fn front_page(static_path: State<'_, StaticPath>) ->
     Result<NamedFile, rocket::response::Debug<std::io::Error>>
 {
     let path = static_path.0.join("plan-b.html");
-    Ok(NamedFile::open(path)?)
+    Ok(NamedFile::open(path).await?)
 }
 
 // Display the Plan B favicon.
 #[get("/favicon.ico")]
-fn favicon(static_path: State<StaticPath>) ->
+async fn favicon(static_path: State<'_, StaticPath>) ->
     Result<NamedFile, rocket::response::Debug<std::io::Error>>
 {
     let path = static_path.0.join("plan-b-favicon.ico");
-    Ok(NamedFile::open(path)?)
+    Ok(NamedFile::open(path).await?)
 }
 
 // Process an EVE route request.
@@ -63,21 +65,14 @@ async fn search_route(
 
 // Plan B web service.
 #[rocket::launch]
-fn rocket() -> rocket::Rocket {
+fn rocket() -> Rocket {
+    async fn attach_path(rocket: Rocket) -> Result<Rocket, Rocket> {
+        let static_path = ["web", "static"].iter().collect();
+        Ok(rocket.manage(StaticPath(static_path)))
+    }
+                     
     Rocket::ignite()
-        .attach(AdHoc::on_attach("Static Path", |rocket| {
-            let static_path = rocket
-                .config()
-                .get_string("static");
-            let static_path = match static_path {
-                Ok(s) => s.into(),
-                Err(e) => {
-                    eprintln!("static: {:?}", e);
-                    ["web", "static"].iter().collect()
-                }
-            };
-            Ok(rocket.manage(StaticPath(static_path)))
-        }))
+        .attach(AdHoc::on_attach("Static Path", attach_path))
+        .manage(Map::fetch().expect("could not load map"))
         .mount("/", routes![front_page, favicon, search_route])
-        .launch();
 }
