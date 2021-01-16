@@ -11,6 +11,10 @@ This is very much a work-in-progress. See `vision.md` and
 
 See *Build* below for detailed build instructions.
 
+See the branch `rocket-0.5` of this repository for a version
+that runs on stable Rust with the current Rocket `0.5-dev`
+release.
+
 ## Usage
 
 The core of this project is a Rust library "crate",
@@ -81,7 +85,8 @@ as above.
 
 ### Build The Rust Code
 
-1. Get the latest stable Rust installed on your system.
+1. Get the relevant version of Rust installed on your
+   system.
 
 2. Run `cargo build --release` from the top-level directory.
 
