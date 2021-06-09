@@ -47,22 +47,14 @@ struct Waypoint {
 
 impl Waypoint {
     /// Create a new waypoint; mild syntactic sugar.
-    fn new(
-        dist: usize,
-        cur: SystemId,
-        parent: Option<SystemId>,
-    ) -> Waypoint {
+    fn new(dist: usize, cur: SystemId, parent: Option<SystemId>) -> Waypoint {
         Waypoint { dist, cur, parent }
     }
 }
 
 // Single-source shortest path via Breadth-First Search.
 // Returns a waypoint map for further processing.
-fn bfs(
-    map: &Map,
-    start: SystemId,
-    goal: Option<SystemId>,
-) -> HashMap<SystemId, Waypoint> {
+fn bfs(map: &Map, start: SystemId, goal: Option<SystemId>) -> HashMap<SystemId, Waypoint> {
     // Set up data structures and run the search.
     let mut q = VecDeque::with_capacity(map.systems_ref().len());
     let mut closed = HashMap::new();
@@ -86,22 +78,14 @@ fn bfs(
         // Open the children of the current system.
         let map_info = map.by_system_id(waypoint.cur);
         for child in map_info.stargates.iter() {
-            let child_waypoint = Waypoint::new(
-                waypoint.dist + 1,
-                *child,
-                Some(waypoint.cur),
-            );
+            let child_waypoint = Waypoint::new(waypoint.dist + 1, *child, Some(waypoint.cur));
             q.push_back(child_waypoint);
         }
     }
 }
 
 /// Return a shortest route if one exists.
-pub fn shortest_route(
-    map: &Map,
-    start: SystemId,
-    goal: SystemId,
-) -> Option<Vec<SystemId>> {
+pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId) -> Option<Vec<SystemId>> {
     // Find single-source shortest paths from start up to goal.
     let waypoints = bfs(map, start, Some(goal));
 
@@ -184,20 +168,15 @@ pub fn shortest_routes_apsp(
     let mut route: Vec<SystemId> = vec![systems[start].system_id];
     while start != goal {
         assert!(dist > 0);
-        let next_neighbors =
-            &apsp[[start, goal]].as_ref().expect("missing hop").next;
+        let next_neighbors = &apsp[[start, goal]].as_ref().expect("missing hop").next;
         let n = next_neighbors.len();
         assert!(n > 0);
         if n > 1 {
             for neighbor in next_neighbors {
                 let neighbor = &systems[*neighbor];
-                let finishes = shortest_routes_apsp(
-                    map,
-                    apsp,
-                    neighbor.system_id,
-                    systems[goal].system_id,
-                )
-                .expect("could not extend route");
+                let finishes =
+                    shortest_routes_apsp(map, apsp, neighbor.system_id, systems[goal].system_id)
+                        .expect("could not extend route");
                 for rest in finishes {
                     assert!(rest.len() == dist);
                     let mut full = route.clone();

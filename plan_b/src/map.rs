@@ -42,9 +42,9 @@ pub struct Map {
 mod json_repr {
     use std::collections::HashMap;
 
-    use std::str::FromStr;
     use serde::{de, Deserialize, Deserializer};
     use serde_json::{self, Value};
+    use std::str::FromStr;
 
     fn de_from_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
     where
@@ -169,11 +169,7 @@ impl Map {
                 Some(ref stargate_ids) => {
                     stargates = stargate_ids
                         .iter()
-                        .map(|s| {
-                            SystemId(
-                                map.stargates[s].destination.system_id,
-                            )
-                        })
+                        .map(|s| SystemId(map.stargates[s].destination.system_id))
                         .collect()
                 }
             }
@@ -202,10 +198,7 @@ impl Map {
 
     /// Return some reference to the system info for the system
     /// with the given name, if found.
-    pub fn by_name<'a>(
-        &'a self,
-        name: &'a str,
-    ) -> Option<&'a SystemInfo> {
+    pub fn by_name<'a>(&'a self, name: &'a str) -> Option<&'a SystemInfo> {
         self.by_name.get(name).map(|i| &self.systems[*i])
     }
 
