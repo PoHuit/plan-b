@@ -8,8 +8,6 @@
 //! This crate provides facilities for routing in the New
 //! Eden universe.
 
-extern crate serde_derive;
-
 pub mod map;
 pub mod search;
 
