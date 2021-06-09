@@ -8,13 +8,10 @@
 
 use std::path::PathBuf;
 
-#[macro_use]
-extern crate rocket;
-use rocket::form::Form;
-use rocket::State;
-use rocket::fs::NamedFile;
+use rocket::*;
 use rocket::fairing::AdHoc;
-use rocket::{Rocket, Build, launch};
+use rocket::form::Form;
+use rocket::fs::NamedFile;
 
 use plan_b::*;
 
