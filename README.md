@@ -4,7 +4,7 @@ Copyright (c) 2018 Po Huit
 Plan B is an [EVE Online](http://eveonline.com) route
 planner. Plan B currently calculates a shortest route, but
 is eventually intended to show reasonable alternative routes
-also (hence the name).
+also (hence the name — for which thanks to Cousin Rob).
 
 This is very much a work-in-progress. See `vision.md` and
 `reqs.md` in `docs/` for a roadmap and status.
