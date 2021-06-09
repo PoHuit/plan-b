@@ -181,8 +181,7 @@ pub fn shortest_routes_apsp(
     };
     let mut dist = full_hop.dist;
     let mut routes: Vec<Vec<SystemId>> = Vec::new();
-    let mut route: Vec<SystemId> = Vec::new();
-    route.push(systems[start].system_id);
+    let mut route: Vec<SystemId> = vec![systems[start].system_id];
     while start != goal {
         assert!(dist > 0);
         let next_neighbors =
