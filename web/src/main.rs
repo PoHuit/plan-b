@@ -8,10 +8,10 @@
 
 use std::path::PathBuf;
 
-use rocket::*;
 use rocket::fairing::AdHoc;
 use rocket::form::Form;
 use rocket::fs::NamedFile;
+use rocket::*;
 
 use plan_b::*;
 
@@ -27,37 +27,31 @@ struct StaticPath(PathBuf);
 
 // Display the Plan B front page.
 #[get("/")]
-async fn front_page(static_path: &State<StaticPath>) ->
-    Result<NamedFile, rocket::response::Debug<std::io::Error>>
-{
+async fn front_page(
+    static_path: &State<StaticPath>,
+) -> Result<NamedFile, rocket::response::Debug<std::io::Error>> {
     let path = static_path.0.join("plan-b.html");
     Ok(NamedFile::open(path).await?)
 }
 
 // Display the Plan B favicon.
 #[get("/favicon.ico")]
-async fn favicon(static_path: &State<StaticPath>) ->
-    Result<NamedFile, rocket::response::Debug<std::io::Error>>
-{
+async fn favicon(
+    static_path: &State<StaticPath>,
+) -> Result<NamedFile, rocket::response::Debug<std::io::Error>> {
     let path = static_path.0.join("plan-b-favicon.ico");
     Ok(NamedFile::open(path).await?)
 }
 
 // Process an EVE route request.
 #[post("/", data = "<route_spec>")]
-async fn search_route(
-    route_spec: Form<RouteSpec>,
-    map: &State<Map>,
-) -> Option<String> {
+async fn search_route(route_spec: Form<RouteSpec>, map: &State<Map>) -> Option<String> {
     let from = map.by_name(&route_spec.from)?;
     let to = map.by_name(&route_spec.to)?;
-    let route: Vec<String> =
-        shortest_route(&map, from.system_id, to.system_id)?
-            .iter()
-            .map(|system_id| {
-                map.by_system_id(*system_id).name.to_string()
-            })
-            .collect();
+    let route: Vec<String> = shortest_route(&map, from.system_id, to.system_id)?
+        .iter()
+        .map(|system_id| map.by_system_id(*system_id).name.to_string())
+        .collect();
     Some(route.join("\n"))
 }
 
@@ -68,7 +62,7 @@ fn rocket() -> Rocket<Build> {
         let static_path = ["web", "static"].iter().collect();
         rocket.manage(StaticPath(static_path))
     }
-                     
+
     rocket::build()
         .attach(AdHoc::on_ignite("Static Path", attach_path))
         .manage(Map::fetch().expect("could not load map"))

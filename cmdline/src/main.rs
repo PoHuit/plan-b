@@ -23,7 +23,7 @@ enum Opt {
         start: String,
         #[structopt(name = "GOAL")]
         goal: String,
-    }
+    },
 }
 
 // Look up the given system name in the map, and panic if
@@ -38,23 +38,17 @@ fn find_system(map: &Map, name: &str) -> SystemId {
 fn find_route(map: &Map, start: &str, goal: &str) -> Vec<SystemId> {
     let start_id = find_system(&map, start);
     let goal_id = find_system(&map, goal);
-    shortest_route(&map, start_id, goal_id).unwrap_or_else(|| {
-        panic!("no route found from {} to {}", start, goal)
-    })
+    shortest_route(&map, start_id, goal_id)
+        .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
 }
 
 // Find all shortest routes by name, or panic if none exists.
-fn find_all_routes(
-    map: &Map,
-    start: &str,
-    goal: &str,
-) -> Vec<Vec<SystemId>> {
+fn find_all_routes(map: &Map, start: &str, goal: &str) -> Vec<Vec<SystemId>> {
     let start_id = find_system(&map, start);
     let goal_id = find_system(&map, goal);
     let apsp = apsp(&map);
-    shortest_routes_apsp(&map, &apsp, start_id, goal_id).unwrap_or_else(
-        || panic!("no route found from {} to {}", start, goal),
-    )
+    shortest_routes_apsp(&map, &apsp, start_id, goal_id)
+        .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
 }
 
 #[test]
