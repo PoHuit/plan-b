@@ -10,10 +10,11 @@ use std::path::PathBuf;
 
 #[macro_use]
 extern crate rocket;
-use rocket::request::{Form, State};
-use rocket::response::NamedFile;
-use rocket::Rocket;
+use rocket::form::Form;
+use rocket::State;
+use rocket::fs::NamedFile;
 use rocket::fairing::AdHoc;
+use rocket::{Rocket, Build, launch};
 
 use plan_b::*;
 
@@ -29,7 +30,7 @@ struct StaticPath(PathBuf);
 
 // Display the Plan B front page.
 #[get("/")]
-async fn front_page(static_path: State<'_, StaticPath>) ->
+async fn front_page(static_path: &State<StaticPath>) ->
     Result<NamedFile, rocket::response::Debug<std::io::Error>>
 {
     let path = static_path.0.join("plan-b.html");
@@ -38,7 +39,7 @@ async fn front_page(static_path: State<'_, StaticPath>) ->
 
 // Display the Plan B favicon.
 #[get("/favicon.ico")]
-async fn favicon(static_path: State<'_, StaticPath>) ->
+async fn favicon(static_path: &State<StaticPath>) ->
     Result<NamedFile, rocket::response::Debug<std::io::Error>>
 {
     let path = static_path.0.join("plan-b-favicon.ico");
@@ -49,7 +50,7 @@ async fn favicon(static_path: State<'_, StaticPath>) ->
 #[post("/", data = "<route_spec>")]
 async fn search_route(
     route_spec: Form<RouteSpec>,
-    map: State<'_, Map>,
+    map: &State<Map>,
 ) -> Option<String> {
     let from = map.by_name(&route_spec.from)?;
     let to = map.by_name(&route_spec.to)?;
@@ -64,15 +65,15 @@ async fn search_route(
 }
 
 // Plan B web service.
-#[rocket::launch]
-fn rocket() -> Rocket {
-    async fn attach_path(rocket: Rocket) -> Result<Rocket, Rocket> {
+#[launch]
+fn rocket() -> Rocket<Build> {
+    async fn attach_path(rocket: Rocket<Build>) -> Rocket<Build> {
         let static_path = ["web", "static"].iter().collect();
-        Ok(rocket.manage(StaticPath(static_path)))
+        rocket.manage(StaticPath(static_path))
     }
                      
-    Rocket::ignite()
-        .attach(AdHoc::on_attach("Static Path", attach_path))
+    rocket::build()
+        .attach(AdHoc::on_ignite("Static Path", attach_path))
         .manage(Map::fetch().expect("could not load map"))
         .mount("/", routes![front_page, favicon, search_route])
 }
