@@ -43,8 +43,7 @@ compute the answer.
 ### Run The Webserver
 
 Plan B can also run as a web service, powered by the
-[Rocket](https://github.com/SergioBenitez/Rocket)
-Rust web framework. 
+[Axum](https://crates.io/crates/axum) Rust web framework.
 
 First follow the *Build* instructions below. Then, to start
 Plan B Web, `cd` into the `web/` directory and
@@ -99,6 +98,6 @@ software for license terms.
 
 Thanks to Sparky Doosan for the name. Thanks to my EVE
 Online software development class for being part of the
-project. Thanks to Sergio Benitez *et al* for the Rocket web
-framework, and to the various Rust developers whose crates
-are used by my project.
+project. Thanks to the authors of the Axum framework, and to
+the various Rust developers whose crates are used by my
+project.

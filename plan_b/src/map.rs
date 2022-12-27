@@ -131,6 +131,7 @@ mod json_repr {
 fn find_map_file() -> Result<File, Box<dyn Error>> {
     let mut f = None;
     for fname in [
+        "../eve-map.json.gz",
         "./static/eve-map.json.gz",
         "./eve-map.json.gz",
         "/usr/local/share/eve-map.json.gz",
