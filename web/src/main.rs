@@ -6,6 +6,10 @@
 // Plan B: EVE route planner with options
 // Web client
 
+// XXX The clippy allow here is due to the derivation from
+// rocket-derive.
+#![allow(clippy::unnecessary_lazy_evaluations)]
+
 use std::path::PathBuf;
 
 use rocket::fairing::AdHoc;
@@ -48,7 +52,7 @@ async fn favicon(
 async fn search_route(route_spec: Form<RouteSpec>, map: &State<Map>) -> Option<String> {
     let from = map.by_name(&route_spec.from)?;
     let to = map.by_name(&route_spec.to)?;
-    let route: Vec<String> = shortest_route(&map, from.system_id, to.system_id)?
+    let route: Vec<String> = shortest_route(map, from.system_id, to.system_id)?
         .iter()
         .map(|system_id| map.by_system_id(*system_id).name.to_string())
         .collect();

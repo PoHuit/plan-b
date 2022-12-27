@@ -163,16 +163,15 @@ impl Map {
             let system_id = SystemId(*system_id);
 
             // Process the system stargates.
-            let stargates: Vec<SystemId>;
-            match system.stargates {
+            let stargates = match system.stargates {
                 None => continue,
                 Some(ref stargate_ids) => {
-                    stargates = stargate_ids
+                    stargate_ids
                         .iter()
                         .map(|s| SystemId(map.stargates[s].destination.system_id))
                         .collect()
                 }
-            }
+            };
 
             // Save the system info and update the hashmaps.
             let system_info = SystemInfo {

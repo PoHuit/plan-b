@@ -36,18 +36,18 @@ fn find_system(map: &Map, name: &str) -> SystemId {
 
 // Find a shortest route by name, or panic if none exists.
 fn find_route(map: &Map, start: &str, goal: &str) -> Vec<SystemId> {
-    let start_id = find_system(&map, start);
-    let goal_id = find_system(&map, goal);
-    shortest_route(&map, start_id, goal_id)
+    let start_id = find_system(map, start);
+    let goal_id = find_system(map, goal);
+    shortest_route(map, start_id, goal_id)
         .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
 }
 
 // Find all shortest routes by name, or panic if none exists.
 fn find_all_routes(map: &Map, start: &str, goal: &str) -> Vec<Vec<SystemId>> {
-    let start_id = find_system(&map, start);
-    let goal_id = find_system(&map, goal);
-    let apsp = apsp(&map);
-    shortest_routes_apsp(&map, &apsp, start_id, goal_id)
+    let start_id = find_system(map, start);
+    let goal_id = find_system(map, goal);
+    let apsp = apsp(map);
+    shortest_routes_apsp(map, &apsp, start_id, goal_id)
         .unwrap_or_else(|| panic!("no route found from {} to {}", start, goal))
 }
 
