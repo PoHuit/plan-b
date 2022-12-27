@@ -77,7 +77,7 @@ async fn search_route(
 }
 
 // Plan B web service.
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let map = Map::fetch().expect("internal error: could not find map data: {e}");
     let map = Arc::new(map);
