@@ -11,9 +11,13 @@ edition = "2018"
 
 [dependencies]
 axum = "0.6.1"
-plan_b = {path = "../plan_b"}
-serde = { version = "1.0.152", features = ["derive"] }
 
+[dependencies.plan_b]
+path = "../plan_b"
+
+[dependencies.serde]
+version = "1.0.152"
+features = ["derive"]
 
 [dependencies.tokio]
 version = "1.23.0"
@@ -22,5 +26,3 @@ features = ["full"]
 [[bin]]
 name = "plan-b-web"
 path = "src/main.rs"
-
-[features]
