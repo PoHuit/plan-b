@@ -19,9 +19,14 @@ use serde::Deserialize;
 use plan_b::*;
 
 // Display the Plan B front page.
-async fn front_page(_: State<Arc<Map>>) -> Html<String> {
-    let html = std::fs::read_to_string("static/plan-b.html").unwrap();
-    Html(html)
+async fn front_page(_: State<Arc<Map>>) -> Result<Html<String>, (StatusCode, String)> {
+    let html = std::fs::read_to_string("static/plan-b.html").map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("internal error: could not find front page HTML: {e}"),
+        )
+    })?;
+    Ok(Html(html))
 }
 
 // Display the Plan B favicon.
