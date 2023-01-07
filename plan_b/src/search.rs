@@ -91,7 +91,7 @@ pub fn shortest_route(map: &Map, start: SystemId, goal: SystemId) -> Option<Vec<
 
     // Set up state and walk route.
     let cur = waypoints.get(&goal)?;
-    let mut route = Vec::with_capacity(cur.dist as usize);
+    let mut route = Vec::with_capacity(cur.dist);
     let mut next_stop = cur.parent;
     route.push(cur.cur);
     while let Some(system_id) = next_stop {
