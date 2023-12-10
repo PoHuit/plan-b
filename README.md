@@ -43,8 +43,7 @@ compute the answer.
 ### Run The Webserver
 
 Plan B can also run as a web service, powered by the
-[Rocket](https://github.com/SergioBenitez/Rocket)
-Rust web framework. 
+[Rocket](https://rocket.rs) Rust web framework.
 
 First follow the *Build* instructions below. Then, to start
 Plan B Web, `cd` into the `web/` directory and

@@ -5,14 +5,14 @@
 
 [package]
 name = "web"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Po Huit <eve.po.huit@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 plan_b = {path = "../plan_b"}
-rocket = "0.5.0-rc.2"
-rocket_codegen = "0.5.0-rc.2"
+rocket = "0.5"
+rocket_codegen = "0.5"
 
 [[bin]]
 name = "plan-b-web"
