@@ -54,6 +54,10 @@ It will take a couple of seconds to load the EVE map before
 the server starts processing requests. The server currently
 listens on `localhost:9146`.
 
+If you would prefer to use the [Rocket](https://rocket.rs)
+Rust web framework, please see the branch `rocket` in this
+repository.
+
 ## Build
 
 This project is written mostly in Rust, with a little Python

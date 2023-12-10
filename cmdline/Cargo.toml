@@ -7,7 +7,7 @@
 name = "cmdline"
 version = "0.1.1"
 authors = ["Po Huit <eve.po.huit@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 plan_b = {path = "../plan_b"}
